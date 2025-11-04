@@ -1,1 +1,3 @@
 # ainots
+
+## [История](./history.md)
