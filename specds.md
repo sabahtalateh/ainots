@@ -707,3 +707,17 @@ $$
 - $x_j^{(i)}$ — значение j-го признака в i-м примере
 
 
+### Библиотека Scikit-learn
+
+www.scikit-learn.org
+
+Open-source инструменты для работы с нейросетями
+
+### Основные инструменты
+
+- IBM SPS Statistics
+- PSPP
+- MatLab
+- Octave
+
+
