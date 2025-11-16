@@ -2194,18 +2194,18 @@ graph TB
 ```mermaid
 flowchart LR
     subgraph input[" "]
-        A[📄<br/>Реальные<br/>данные]
+        A[📄<br/>Реальные данные]
     end
     
     subgraph process["Процесс создания синтетических данных"]
-        B[📦<br/>Обучение<br/>модели]
+        B[📦<br/>Обучение модели]
         C[🎛️<br/>Настройка]
-        D[📊<br/>Отчет и<br/>уточнение]
+        D[📊<br/>Отчет и уточнение]
         E[➕<br/>Генерация]
     end
     
     subgraph output[" "]
-        F[📄<br/>Синтетические<br/>данные]
+        F[📄<br/>Синтетические данные]
     end
     
     A --> B
@@ -2223,4 +2223,34 @@ flowchart LR
     style C fill:#fff,stroke:#666,stroke-width:2px
     style D fill:#fff,stroke:#666,stroke-width:2px
     style E fill:#fff,stroke:#666,stroke-width:2px
+```
+
+### Как работает копилот (ИИ ассистент)
+
+```mermaid
+flowchart LR
+    A[🧑<br/>Ввод пользователя]
+    B[⚙️<br/>Обработка естественного языка NLP]
+    C[🔍<br/>Понимание контекста]
+    D[📁<br/>Поиск информации]
+    E[💻<br/>Генерация ответов]
+    F[💬<br/>Обратная связь с пользователем]
+    G[🎯<br/>Непрерывное обучение]
+    
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    
+    style A fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    style B fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    style C fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    style D fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    style E fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    style F fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    style G fill:#2c3e50,stroke:#e74c3c,stroke-width:3px,color:#fff
+    
+    linkStyle 0,1,2,3,4,5 stroke:#e74c3c,stroke-width:3px
 ```
