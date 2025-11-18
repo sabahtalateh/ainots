@@ -2972,4 +2972,34 @@ graph TD
 - Дерево может использоваться для автоматической оценки новых клиентов
 - Путь от корня до листа показывает правило принятия решения
 
+### Библиотеки и инструменты для работы с графами
+
+#### Python библиотеки:
+
+1. **NumPy** — [numpy.scipy.org](http://numpy.scipy.org)
+   - Базовая библиотека для научных вычислений
+
+2. **NetworkX** — [networkx.lanl.gov](http://networkx.lanl.gov)
+   - Создание, манипуляция и изучение структуры сложных сетей
+
+3. **python-graph** — [code.google.com/p/python-graph](http://code.google.com/p/python-graph)
+   - Библиотека для работы с графами на Python
+
+4. **Graphine** — [gitorious.org/projects/graphine](http://gitorious.org/projects/graphine/pages/Home)
+   - Инструменты для работы с графами
+
+#### Специализированные инструменты:
+
+5. **Онлайн редактор графов** — [Programforyou](https://programforyou.ru/graph-redactor)
+   - Визуальное построение и редактирование графов онлайн
+
+6. **Pygr** — [bioinfo.mbi.ucla.edu/pygr](http://bioinfo.mbi.ucla.edu/pygr)
+   - База данных графов для биоинформатики
+
+7. **Gato** — [gato.sourceforge.net](http://gato.sourceforge.net)
+   - Набор инструментов для анимации графов и визуализации алгоритмов
+
+8. **PADS** — [ics.uci.edu/~eppstein/PADS](http://www.ics.uci.edu/~eppstein/PADS)
+   - Коллекция алгоритмов на графах (Python Algorithm Data Structures)
+
 
