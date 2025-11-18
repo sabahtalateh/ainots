@@ -3475,14 +3475,14 @@ graph TD
 
 ### 10 инструментов ИИ для повышения продуктивности
 
-1. **Syllaby.io** — находите вирусные темы, пишите сценарии, создавайте видеоролики с использованием ИИ — https://syllaby.io
-2. **Claude.ai** — альтернатива ChatGPT — https://claude.ai
-3. **zety.com** — конструктор резюме — https://zety.com
-4. **beautiful.ai** — создавайте красивые презентации — https://beautiful.ai
-5. **hackertyper.net** — превратитесь в крутого хакера — https://hackertyper.net
-6. **stockimg.ai** — дизайн и визуальный контент — https://stockimg.ai
-7. **10web.io** — конструктор сайтов с ИИ — https://10web.io
-8. **fastreply.io** — увеличивайте количество подписчиков в Twitter/X — https://fastreply.io
-9. **cleanvoice.ai** — редактирование подкастов — https://cleanvoice.ai
-10. **fastpedia.io** — каталог более 900 инструментов ИИ — https://fastpedia.io
+1. [Syllaby.io](https://syllaby.io) — находите вирусные темы, пишите сценарии, создавайте видеоролики с использованием ИИ
+2. [Claude.ai](https://claude.ai) — альтернатива ChatGPT
+3. [zety.com](https://zety.com) — конструктор резюме
+4. [beautiful.ai](https://beautiful.ai) — создавайте красивые презентации
+5. [hackertyper.net](https://hackertyper.net) — превратитесь в крутого хакера
+6. [stockimg.ai](https://stockimg.ai) — дизайн и визуальный контент
+7. [10web.io](https://10web.io) — конструктор сайтов с ИИ
+8. [fastreply.io](https://fastreply.io) — увеличивайте количество подписчиков в Twitter/X
+9. [cleanvoice.ai](https://cleanvoice.ai) — редактирование подкастов
+10. [fastpedia.io](https://fastpedia.io) — каталог более 900 инструментов ИИ
 
