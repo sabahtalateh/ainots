@@ -383,6 +383,24 @@ matan2               * /opt/anaconda3/envs/matan2
 
 Также можно зайти в папку с окружением и посмотреть что там находится отдельная версия бинарника питона и всех установленных в это окружение пакетов
 
+### Установить пакет
+
+```shell
+conda install rich
+```
+
+Можно указать из какого репозитория
+
+```shell
+conda install conda-forge::rich
+```
+
+И версию
+
+```shell
+conda install conda-forge::rich=14.2.0
+```
+
 
 ### Cheat Sheet
 
