@@ -345,17 +345,6 @@ conda activate base
 
 <img src="./images/conda-env.png">
 
-После создания в терминале тоже можно убедиться что окружение создано. В папку с окружением можно зайти и посмотреть что там находится отдельная версия бинарника питона и всех установленных в это окружение пакетов
-
-```shell
-$ conda env list
-
-# conda environments:
-#
-base                 * /opt/anaconda3
-matan1                 /opt/anaconda3/envs/matan1
-```
-
 Переключиться в окружение
 
 ```shell
@@ -369,6 +358,21 @@ conda activate matan1
 ```shell
 conda create --name matan2 python=3.12
 ```
+
+И посмотреть список окружений (справа директория окружения)
+
+```shell
+$ conda env list
+
+# conda environments:
+#
+base                   /opt/anaconda3
+matan1                 /opt/anaconda3/envs/matan1
+matan2               * /opt/anaconda3/envs/matan2
+```
+
+Также можно зайти в папку с окружением и посмотреть что там находится отдельная версия бинарника питона и всех установленных в это окружение пакетов
+
 
 ### Cheat Sheet
 
