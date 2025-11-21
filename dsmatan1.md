@@ -362,4 +362,9 @@ matan1                 /opt/anaconda3/envs/matan1
 conda activate matan1
 ```
 
+### Cheat Sheet
+
+[Список команд conda](https://docs.conda.io/projects/conda/en/stable/user-guide/cheatsheet.html)
+
+[conda-25.3.1.pdf](./conda-25.3.1.pdf)
 
