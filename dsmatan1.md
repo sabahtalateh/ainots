@@ -297,3 +297,26 @@ Conda окружения **не являются** стандартными Pyth
 
 **Для этого курса** используйте conda окружения, так как они гарантируют правильные версии всех научных библиотек и их зависимостей.
 
+## Работа с Anaconda
+
+- Установим Anaconda
+- Подключим репозиторий Conda Forge с пакетами для ML
+- Настроим виртуальное окружение
+
+### Установка
+
+Скачаем Anaconda (НЕ miniconda) с сайта [anaconda.com](https://www.anaconda.com/download)
+
+<img src="./images/anaconda-download.png"/>
+
+### Conda Forge
+
+Подключим репозиторий [Conda Forge](https://conda-forge.org)
+
+```
+Channels -> Add -> conda-forge -> <Enter>
+```
+
+<img src="./images/conda-forge.png">
+
+
