@@ -336,4 +336,13 @@ conda activate base
 
 <img src="./images/conda-term.png"/>
 
+### Виртуальное окружение
+
+В Anaconda Navigator:
+- Переходим в `Environments`
+- Нажимаем снизу `Create`
+- Зполняем поля 
+
+<img src="./images/conda-env.png">
+
 
