@@ -351,19 +351,32 @@ conda activate base
 conda activate matan1
 ```
 
-#### В терминале
+#### Работа с conda в терминале
 
-Окружение можно так-же создать из теримнала
+Посмотреть доступные версии питона
+
+```shell
+conda search python
+```
+
+Создание окружения
 
 ```shell
 conda create --name matan2 python=3.12
 ```
 
-И посмотреть список окружений (справа директория окружения)
+Удаление окружения
 
 ```shell
-$ conda env list
+conda env remove --name matan2
+```
 
+Посмотреть список окружений (справа директория окружения)
+
+```shell
+conda env list
+```
+```shell
 # conda environments:
 #
 base                   /opt/anaconda3
