@@ -313,9 +313,12 @@ Conda окружения **не являются** стандартными Pyth
 
 Подключим репозиторий [Conda Forge](https://conda-forge.org)
 
-```
-Channels -> Add -> conda-forge -> <Enter>
-```
+
+- В Anaconda Navigator нажимаем `Channels`
+- `Add`
+- Пишем в поле `conda-forge` и нажимаем `<Enter>`
+- Нажимаем `Update Channels`
+
 
 <img src="./images/conda-forge.png">
 
