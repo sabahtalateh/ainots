@@ -78,8 +78,8 @@ graph LR
 
 ### Conda VS pip
 
-- pip — часть официальной экосистемы Python (разрабатывается Python Packaging Authority)
-- conda — независимый проект, решающий более широкие задачи (не только Python-пакеты, но и системные зависимости)
+- pip — стандартный менеджер пакетов для Python
+- conda — независимый проект, менеджер пакетов и виртуальных окружений (не virtual env)
 
 | Характеристика | conda | pip |
 |----------------|-------|-----|
@@ -88,6 +88,23 @@ graph LR
 | **Зависимости** | Включая системные библиотеки | Только Python-пакеты |
 | **Разрешение конфликтов** | SAT-решатель (надежнее) | Простой алгоритм |
 | **Источник** | Anaconda, conda-forge | PyPI (Python Package Index) |
+
+### Conda env vs venv — в чём разница?
+
+Conda окружения **не являются** стандартными Python `venv`. Это разные технологии:
+
+| Характеристика | venv (стандартный Python) | conda env |
+|----------------|---------------------------|-----------|
+| **Изоляция** | Только Python-пакеты | Python + системные библиотеки |
+| **Версия Python** | Фиксированная (от системы) | Можно выбрать любую |
+| **Не-Python пакеты** | ❌ | ✅ (R, CUDA, OpenCV и т.д.) |
+| **Расположение** | В папке проекта | Централизованно в `anaconda3/envs/` |
+| **Размер** | Маленький (~10-50 MB) | Больше (сотни MB) |
+| **Создание** | `python -m venv myenv` | `conda create -n myenv` |
+
+**Ключевое отличие:** conda создает полностью независимую копию Python с собственными системными библиотеками, тогда как venv использует симлинки на существующий Python и изолирует только пакеты.
+
+**Для этого курса** используйте conda окружения, так как они гарантируют правильные версии всех научных библиотек и их зависимостей.
 
 ### Структура директории Anaconda
 
@@ -280,26 +297,11 @@ pip install experimental-package
 # Не понравилось? Просто удаляю: conda remove -n test_env --all
 ```
 
-### Conda env vs venv — в чём разница?
-
-Conda окружения **не являются** стандартными Python `venv`. Это разные технологии:
-
-| Характеристика | venv (стандартный Python) | conda env |
-|----------------|---------------------------|-----------|
-| **Изоляция** | Только Python-пакеты | Python + системные библиотеки |
-| **Версия Python** | Фиксированная (от системы) | Можно выбрать любую |
-| **Не-Python пакеты** | ❌ | ✅ (R, CUDA, OpenCV и т.д.) |
-| **Расположение** | В папке проекта | Централизованно в `anaconda3/envs/` |
-| **Размер** | Маленький (~10-50 MB) | Больше (сотни MB) |
-| **Создание** | `python -m venv myenv` | `conda create -n myenv` |
-
-**Ключевое отличие:** conda создает полностью независимую копию Python с собственными системными библиотеками, тогда как venv использует симлинки на существующий Python и изолирует только пакеты.
-
-**Для этого курса** используйте conda окружения, так как они гарантируют правильные версии всех научных библиотек и их зависимостей.
-
 ## Anaconda Navigator
 
-Рассмотрим как этим пользоваться
+Anaconda Navigator устанавливается вместе с Anaconda
+
+Рассмотрим как что в нём можно делать
 
 ### Установка
 
@@ -345,6 +347,20 @@ conda activate matan1
 
 <img src="./images/install-package.png"/>
 
+### Сохранение и восстановление окружения
+
+Окружения можно сохранять и восстанавливать из `.yaml` файлов, таким образом можно передавать окружения между машинами
+
+#### Сохранение
+
+- Выбрать нужное окружение
+- Нажать `Backup` в нижней части окна
+- Сохранить в файл
+
+#### Восстановление
+
+- Нажать `Import`
+- Выбрать `yaml` файл
 
 ## Сonda в терминале
 
@@ -391,6 +407,8 @@ matan2               * /opt/anaconda3/envs/matan2
 
 ### Установить пакет
 
+Нужно обратить внимание какое окружение активно
+
 ```shell
 conda install rich
 ```
@@ -406,4 +424,261 @@ conda install conda-forge::rich
 ```shell
 conda install conda-forge::rich=14.2.0
 ```
+
+После установки пакет будет виден в списке установленных в окружении
+
+```shell
+conda list
+```
+
+```shell
+conda list rich
+```
+
+### Ревизии
+
+Ревизии это слепки состояния окружения (утсановленных пакетов)
+
+#### Список ревизий
+
+```shell
+conda list --revisions
+```
+
+```   
+2025-11-21 19:48:54  (rev 0)
+    +bzip2-1.0.8 (conda-forge/osx-arm64)
+    +ca-certificates-2025.11.12 (conda-forge/noarch)
+    +icu-75.1 (conda-forge/osx-arm64)
+    +libexpat-2.7.3 (conda-forge/osx-arm64)
+    +libffi-3.5.2 (conda-forge/osx-arm64)
+    +liblzma-5.8.1 (conda-forge/osx-arm64)
+    +libmpdec-4.0.0 (conda-forge/osx-arm64)
+    +libsqlite-3.51.0 (conda-forge/osx-arm64)
+    +libzlib-1.3.1 (conda-forge/osx-arm64)
+    +ncurses-6.5 (conda-forge/osx-arm64)
+    +openssl-3.6.0 (conda-forge/osx-arm64)
+    +pip-25.3 (conda-forge/noarch)
+    +python-3.14.0 (conda-forge/osx-arm64)
+    +python_abi-3.14 (conda-forge/noarch)
+    +readline-8.2 (conda-forge/osx-arm64)
+    +tk-8.6.13 (conda-forge/osx-arm64)
+    +tzdata-2025b (conda-forge/noarch)
+    +zstd-1.5.7 (conda-forge/osx-arm64)
+
+2025-11-21 20:12:23  (rev 1)
+    +markdown-it-py-4.0.0 (conda-forge/noarch)
+    +mdurl-0.1.2 (conda-forge/noarch)
+    +pygments-2.19.2 (conda-forge/noarch)
+    +rich-14.2.0 (conda-forge/noarch)
+    +typing_extensions-4.15.0 (conda-forge/noarch)
+```
+
+#### Переключение между ревизиями
+
+Conda позволяет откатываться к предыдущим состояниям окружения или переходить к более новым. Это работает как система контроля версий для пакетов.
+
+**Откат к предыдущей ревизии:**
+
+```shell
+# Вернуться к ревизии 0 (чистое окружение без rich)
+conda install --revision 0
+```
+
+**Переход к более новой ревизии:**
+
+```shell
+# Вернуть установку rich (перейти к ревизии 1)
+conda install --revision 1
+```
+
+**Практический пример:**
+
+```shell
+# Посмотреть текущее состояние
+(matan) ~ conda list --revisions
+
+# Сейчас у вас rev 1 (с установленным rich)
+# Откатываемся к rev 0
+(matan) ~ conda install --revision 0
+
+# Проверяем - rich удален
+(matan) ~ conda list rich
+# PackagesNotFoundError: The following packages are missing from the target environment: rich
+
+# Возвращаемся обратно к rev 1
+(matan) ~ conda install --revision 1
+
+# Rich снова установлен!
+(matan) ~ conda list rich
+# rich  14.2.0  pyhd8ed1ab_0  conda-forge
+```
+
+**Важно:**
+- При переключении ревизий conda автоматически установит или удалит нужные пакеты
+- Это безопасный способ экспериментировать с пакетами
+- Можно откатиться к любой ревизии, не только к предыдущей
+- Каждое переключение создаёт новую ревизию (история не теряется)
+
+### Бэкап и восстановление окружений
+
+Conda позволяет экспортировать состояние окружения в файл и восстанавливать его на другом компьютере или после удаления окружения.
+
+#### Экспорт окружения в YAML-файл
+
+**Полный экспорт (включая все зависимости):**
+
+Экспортировать текущее активное окружение
+
+```shell
+conda env export > ~/Desktop/environment.yaml
+```
+
+Экспортировать конкретное окружение по имени
+
+```shell
+conda env export -n matan > ~/Desktop/matan.bkp.yaml
+```
+
+Файл будет содержать:
+
+```yaml
+name: matan
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.14.0
+  - rich=14.2.0
+  # ... и все системные библиотеки
+prefix: /opt/anaconda3/envs/matan
+```
+
+**Упрощенный экспорт (только явно установленные пакеты):**
+
+Экспортировать без транзитивных зависимостей
+
+```shell
+conda env export --from-history > environment_simple.yml
+```
+
+Это создаст более компактный файл:
+
+```yaml
+name: matan
+channels:
+  - conda-forge
+dependencies:
+  - python=3.14
+  - rich=14.2.0
+```
+
+#### Восстановление окружения из YAML-файла
+
+**Создать новое окружение из файла:**
+
+Создать окружение с именем из файла
+
+```shell
+conda env create -f ~/Desktop/matan.bkp.yaml
+```
+
+Создать окружение с другим именем
+
+```shell
+conda env create -f ~/Desktop/matan.bkp.yaml -n matanrestored
+```
+
+**Обновить существующее окружение:**
+
+Обновить пакеты в существующем окружении согласно файлу
+
+`--prune` удаляет пакеты, которых нет в файле
+
+```shell
+conda env update -n matan -f environment.yaml --prune
+```
+
+#### Экспорт в формате requirements.txt
+
+Для совместимости с pip или более простого формата:
+
+```shell
+# Экспорт в формате conda
+conda list --export > requirements_conda.txt
+
+# Экспорт только pip-пакетов
+pip list --format=freeze > requirements_pip.txt
+```
+
+**Восстановление из requirements.txt:**
+
+```shell
+# Создать окружение из requirements
+conda create -n restored_env --file requirements_conda.txt
+
+# Или установить в существующее окружение
+conda install --file requirements_conda.txt
+```
+
+#### Практические сценарии
+
+**Сценарий 1: Переезд на новый компьютер**
+
+```shell
+# На старом компьютере
+(matan) ~ conda env export > matan_backup.yml
+# Скопировать файл matan_backup.yml на новый компьютер
+
+# На новом компьютере
+~ conda env create -f matan_backup.yml
+~ conda activate matan
+```
+
+**Сценарий 2: Поделиться окружением с коллегой**
+
+```shell
+# Экспорт только явно установленных пакетов (работает на всех платформах)
+conda env export --from-history > environment.yml
+
+# Коллега создаёт окружение
+conda env create -f environment.yml
+```
+
+**Сценарий 3: Бэкап перед экспериментами**
+
+```shell
+# Сохранить текущее состояние
+conda env export > backup_before_experiment.yml
+
+# Эксперименты с установкой пакетов...
+conda install some-package
+
+# Что-то пошло не так? Восстановиться:
+conda env remove -n matan
+conda env create -f backup_before_experiment.yml
+```
+
+**Сценарий 4: Версионирование окружений в Git**
+
+```shell
+# Добавить environment.yml в репозиторий
+conda env export --from-history > environment.yml
+git add environment.yml
+git commit -m "Add environment specification"
+
+# Другой разработчик клонирует репозиторий и создаёт окружение
+git clone <repo>
+conda env create -f environment.yml
+```
+
+#### Разница между методами экспорта
+
+| Метод | Формат | Переносимость | Размер файла | Когда использовать |
+|-------|--------|---------------|--------------|-------------------|
+| `conda env export` | YAML (полный) | ❌ Только та же ОС и архитектура | Большой | Точный бэкап на том же компьютере |
+| `conda env export --from-history` | YAML (минимальный) | ✅ Кроссплатформенный | Маленький | **Рекомендуется** для совместной работы и Git |
+| `conda list --export` | Текстовый список | ❌ Только та же ОС | Средний | Для быстрого просмотра |
+
+**Рекомендация:** Для этого курса используйте `--from-history` и храните `environment.yml` в Git — так любой студент сможет воспроизвести окружение независимо от ОС.
 
