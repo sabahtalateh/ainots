@@ -345,4 +345,15 @@ conda activate base
 
 <img src="./images/conda-env.png">
 
+После создания в терминале тоже можно убедиться что окружение создано
+
+```
+$ conda env list
+
+# conda environments:
+#
+base                 * /opt/anaconda3
+matan1                 /opt/anaconda3/envs/matan1
+```
+
 
