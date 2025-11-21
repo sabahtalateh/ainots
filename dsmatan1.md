@@ -348,6 +348,12 @@ conda activate matan1
 
 ## Сonda в терминале
 
+### Cheat Sheet
+
+[Список команд conda](https://docs.conda.io/projects/conda/en/stable/user-guide/cheatsheet.html)
+
+[conda-25.3.1.pdf](./conda-25.3.1.pdf)
+
 ### Посмотреть доступные версии питона
 
 ```shell
@@ -400,11 +406,4 @@ conda install conda-forge::rich
 ```shell
 conda install conda-forge::rich=14.2.0
 ```
-
-
-### Cheat Sheet
-
-[Список команд conda](https://docs.conda.io/projects/conda/en/stable/user-guide/cheatsheet.html)
-
-[conda-25.3.1.pdf](./conda-25.3.1.pdf)
 
