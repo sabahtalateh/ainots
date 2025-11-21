@@ -362,6 +362,14 @@ matan1                 /opt/anaconda3/envs/matan1
 conda activate matan1
 ```
 
+#### В терминале
+
+Окружение можно так-же создать из теримнала
+
+```shell
+conda create --name matan2 python=3.12
+```
+
 ### Cheat Sheet
 
 [Список команд conda](https://docs.conda.io/projects/conda/en/stable/user-guide/cheatsheet.html)
