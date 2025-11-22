@@ -1009,13 +1009,13 @@ Hello from client 1
 exit
 ```
 
-Kernel продолжит работать! Чтобы убить:
+Kernel продолжит работать! Чтобы завершить:
 
 ```bash
 jupyter kernel stop kernel-12345.json
 ```
 
-Или найти процесс и убить:
+Или найти процесс и завершить:
 
 ```bash
 ps aux | grep ipykernel
