@@ -871,13 +871,7 @@ conda create -n test_kernel python=3.14 ipykernel -y
 conda activate test_kernel
 ```
 
-**Шаг 1: Запустить kernel вручную**. Получить строку подключения
-
-Установить jupyter-client для команд (зависимость ipykernel, но нужна CLI):
-
-```bash
-conda install jupyter-client -y
-```
+**Шаг 1: Запустить kernel вручную. Получить строку подключения**
 
 Запустить kernel:
 
@@ -919,14 +913,14 @@ python -m ipykernel_launcher --connection-file=...
 
 **Шаг 3: Подключиться и отправить команды**
 
-Установите консольный клиент:
+Установите консольный клиент (отдельно он почему-то не ставится, ставим весь jupyter):
 
 ```bash
 conda activate test_kernel
 ```
 
 ```bash
-conda install jupyter-console -y
+conda install jupyter -y
 ```
 
 Подключитесь к запущенному kernel:
