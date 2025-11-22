@@ -290,7 +290,7 @@ $$\mathbb{N} \subset \mathbb{Z}$$
 
 ### Множество рациональных чисел $\mathbb{Q}$
 
-$$\mathbb{Q} = \left\{q \mid q = \frac{p}{n}, \, p \in \mathbb{Z}, \, n \in \mathbb{N}\right\}$$
+$$\mathbb{Q} = \{ q \mid q = \frac{p}{n}, \, p \in \mathbb{Z}, \, n \in \mathbb{N} \}$$
 
 Рациональные числа — это все числа, которые можно представить в виде дроби $\frac{p}{n}$, где $p$ — целое число (числитель), $n$ — натуральное число (знаменатель).
 
