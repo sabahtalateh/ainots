@@ -684,7 +684,7 @@ conda env create -f environment.yml
 
 **Рекомендация:** Для этого курса используйте `--from-history` и храните `environment.yml` в Git — так любой студент сможет воспроизвести окружение независимо от ОС.
 
-## Notebook
+## Jupyter Notebook
 
 ### В браузере
 
@@ -871,7 +871,7 @@ conda create -n test_kernel python=3.14 ipykernel -y
 conda activate test_kernel
 ```
 
-**Шаг 1: Запустить kernel вручную**
+**Шаг 1: Запустить kernel вручную**. Получить строку подключения
 
 Установить jupyter-client для команд (зависимость ipykernel, но нужна CLI):
 
@@ -891,6 +891,11 @@ jupyter kernel --kernel=python
 [KernelApp] Starting kernel 'python'
 [KernelApp] Connection file: /Users/.../runtime/kernel-12345.json
 [KernelApp] To connect: --existing kernel-12345.json
+```
+
+**Запомним строку подключения**:
+```shell
+--existing kernel-12345.json
 ```
 
 **Что произошло:**
