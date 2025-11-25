@@ -816,7 +816,7 @@ Select Another Kernel...
 2. Пишем `Python: Select Interpreter`
 3. Выбираем интепретатор, установленный для ноутбука
 
-<img src="./images/interp.png"/>
+<img src="./images/interpretator.png"/>
 
 **Шаг 5: Проверка подключения**
 
