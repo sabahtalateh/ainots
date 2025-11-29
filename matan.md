@@ -86,7 +86,7 @@ $$\forall a \in A, b \in B \to a \leqslant c \leqslant b.$$
 
 - Множество **целых** чисел $\mathbb{Z} = \{0, 1, -1, 2, -2, 3, -3, \ldots\}$.
 
-- Множество **рациональных** чисел $\mathbb{Q} = \left\{x : x = \frac{m}{n}, m \in \mathbb{Z}, n \in \mathbb{N}\right\}$.
+- Множество **рациональных** чисел $\mathbb{Q} = \{x : x = \frac{m}{n}, m \in \mathbb{Z}, n \in \mathbb{N}\}$.
 
 - Множество **иррациональных** чисел $\mathbb{R} \setminus \mathbb{Q}$.
 
