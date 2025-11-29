@@ -87,3 +87,29 @@ $$\forall \varepsilon > 0 \quad \exists \delta > 0: \quad \forall x \in \mathbb{
 | Предел | При $n \to \infty$ | При $x \to a$ (в любой точке) |
 | Параметр | $N$ — номер элемента | $\delta$ — радиус окрестности |
 | Условие | $n > N$ | $0 < \|x - a\| < \delta$ |
+
+## Алгебра последовательностей и пределов
+
+Мы можем складывать, вычитать, умножить и делить последовательности поэлементно:
+
+$$
+\begin{aligned}
+&(A + B)_n = A_n + B_n \\
+&(A - B)_n = A_n - B_n \\
+&(AB)_n = A_n B_n \\
+&\Big(\dfrac{A}{B}\Big)_n = \dfrac{A_n}{B_n}
+\end{aligned}
+$$
+
+Если $A$ и $B$ имеют соответственно пределы $a$ и $b$, у нас есть следующие отношения между суммами, разностями, произведениями и частями последовательностей и их соответствующими пределами: 
+
+
+$$
+\begin{aligned}
+&\displaystyle\lim_{n \rightarrow \infty} (A + B)_n = \displaystyle\lim_{n \rightarrow \infty} A_n + \displaystyle\lim_{n \rightarrow \infty} B_n = a + b\\
+&\displaystyle\lim_{n \rightarrow \infty} (A - B)_n = \displaystyle\lim_{n \rightarrow \infty} A_n - \displaystyle\lim_{n \rightarrow \infty} B_n = a - b \\
+&\displaystyle\lim_{n \rightarrow \infty} (AB)_n = (\displaystyle\lim_{n \rightarrow \infty} A_n)(\displaystyle\lim_{n \rightarrow \infty}  B_n) = a b \\
+&\displaystyle\lim_{n \rightarrow \infty} \Big(\dfrac{A}{B}\Big)_n = \dfrac{\displaystyle\lim_{n \rightarrow \infty}  A_n}{\displaystyle\lim_{n \rightarrow \infty}  B_n} = \dfrac{a}{b}
+\end{aligned}
+$$
+
