@@ -106,10 +106,10 @@ $$
 
 $$
 \begin{aligned}
-&\displaystyle\lim_{n \rightarrow \infty} (A + B)_n = \displaystyle\lim_{n \rightarrow \infty} A_n + \displaystyle\lim_{n \rightarrow \infty} B_n = a + b\\
-&\displaystyle\lim_{n \rightarrow \infty} (A - B)_n = \displaystyle\lim_{n \rightarrow \infty} A_n - \displaystyle\lim_{n \rightarrow \infty} B_n = a - b \\
-&\displaystyle\lim_{n \rightarrow \infty} (AB)_n = (\displaystyle\lim_{n \rightarrow \infty} A_n)(\displaystyle\lim_{n \rightarrow \infty}  B_n) = a b \\
-&\displaystyle\lim_{n \rightarrow \infty} \Big(\dfrac{A}{B}\Big)_n = \dfrac{\displaystyle\lim_{n \rightarrow \infty}  A_n}{\displaystyle\lim_{n \rightarrow \infty}  B_n} = \dfrac{a}{b}
+&\lim_{n \to \infty} (A + B)_n = \lim_{n \to \infty} A_n + \lim_{n \to \infty} B_n = a + b\\
+&\lim_{n \to \infty} (A - B)_n = \lim_{n \to \infty} A_n - \lim_{n \to \infty} B_n = a - b \\
+&\lim_{n \to \infty} (AB)_n = \left(\lim_{n \to \infty} A_n\right) \left(\lim_{n \to \infty} B_n\right) = ab \\
+&\lim_{n \to \infty} \left(\frac{A}{B}\right)_n = \frac{\lim_{n \to \infty} A_n}{\lim_{n \to \infty} B_n} = \frac{a}{b}
 \end{aligned}
 $$
 
@@ -146,4 +146,34 @@ $$A_n = 2n + n^2, \quad B_n = n^2$$
 $$\lim_{n \to \infty} \frac{A_n}{B_n} = \lim_{n \to \infty} \frac{2n + n^2}{n^2} = \lim_{n \to \infty} \left(\frac{2n}{n^2} + \frac{n^2}{n^2}\right) = \lim_{n \to \infty} \left(\frac{2}{n} + 1\right) = 0 + 1 = 1$$
 
 Так как $\frac{1}{n} \to 0$, получаем, что $A_n \sim B_n$ (последовательности асимптотически эквивалентны).
+
+## Пределы отношений
+
+Асимптотическое равенство полезно для вычисления пределов отношений последовательностей.
+
+**Свойство:** Если $A \sim C$ и $B \sim D$, то:
+
+$$\lim_{n \to \infty} \frac{A_n}{B_n} = \lim_{n \to \infty} \frac{C_n}{D_n}$$
+
+Это полезно, потому что $C$ и $D$ могут быть проще, чем $A$ и $B$.
+
+### Пример
+
+Найти предел:
+
+$$\lim_{n \to \infty} \frac{A_n}{B_n}$$
+
+где:
+
+$$A_n = 3 + n + 4n^2, \quad B_n = 1 + n^2$$
+
+**Решение:**
+
+При больших $n$ старшие члены доминируют, поэтому:
+
+$$A_n \sim C_n = 4n^2, \quad B_n \sim D_n = n^2$$
+
+Следовательно:
+
+$$\lim_{n \to \infty} \frac{A_n}{B_n} = \lim_{n \to \infty} \frac{3 + n + 4n^2}{1 + n^2} = \lim_{n \to \infty} \frac{C_n}{D_n} = \lim_{n \to \infty} \frac{4n^2}{n^2} = 4$$
 
