@@ -113,3 +113,33 @@ $$
 \end{aligned}
 $$
 
+## Асимптотическое равенство 
+
+Асимптотические последовательности очень похоже себя ведут при большом значении $n$. Две последовательности $A$ и $B$ называются асимптотически равными (или асимптотически эквивалентными), если
+
+$$
+\displaystyle\lim_{n \rightarrow \infty} \frac{A_n}{B_n} = 1
+$$
+В это случае можно использовать тильду:
+$$
+A \sim B
+$$
+Можно заметить, что если $A$ и $B$ асимптотически эквивалентны, то их пределы $a$ и $b$ будет равны так как:
+$$
+\displaystyle\lim_{n \rightarrow \infty} \dfrac{A_n}{B_n} =  \dfrac{\displaystyle\lim_{n \rightarrow \infty} A_n}{\displaystyle\lim_{n \rightarrow \infty} B_n} = \dfrac{a}{b}
+$$
+только если  $a = b$.
+
+Однако, две последовательности могут быть асимптотически эквивалентны, даже если у них нет пределов.  Например:
+$$
+\begin{aligned}
+&A_n = 2n + n^2 \\
+&B_n = n^2
+\end{aligned}
+$$
+Рассмотрим предел их отношений:
+$$
+\displaystyle\lim_{n \rightarrow \infty} \dfrac{A_n}{B_n} = \displaystyle\lim_{n \rightarrow \infty}\dfrac{2n + n^2}{n^2} = \displaystyle\lim_{n \rightarrow \infty}\dfrac{2n}{n^2} + \displaystyle\lim_{n \rightarrow \infty}\dfrac{n^2}{n^2} = 2 \displaystyle\lim_{n \rightarrow \infty}\dfrac{1}{n} + \displaystyle\lim_{n \rightarrow \infty} 1 = 0 + 1 = 1
+$$
+так как мы знаем, что $\frac{1}{n}$ стремится к нулю. Поэтому, $A_n$ and $B_n$ - асимптотически эквивалентны.
+
