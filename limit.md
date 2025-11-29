@@ -90,29 +90,45 @@ $$\forall \varepsilon > 0 \quad \exists \delta > 0: \quad \forall x \in \mathbb{
 
 ## Алгебра последовательностей и пределов
 
-Мы можем складывать, вычитать, умножить и делить последовательности поэлементно:
+### Определение операций над последовательностями
+
+Для последовательностей $A = (A_1, A_2, A_3, \ldots)$ и $B = (B_1, B_2, B_3, \ldots)$ операции определяются **поэлементно**:
 
 $$
 \begin{aligned}
-&(A + B)_n = A_n + B_n \\
-&(A - B)_n = A_n - B_n \\
-&(AB)_n = A_n B_n \\
-&\Big(\dfrac{A}{B}\Big)_n = \dfrac{A_n}{B_n}
+&(A + B)_n = A_n + B_n \quad \text{(сумма)} \\
+&(A - B)_n = A_n - B_n \quad \text{(разность)} \\
+&(A \cdot B)_n = A_n \cdot B_n \quad \text{(произведение)} \\
+&\left(\frac{A}{B}\right)_n = \frac{A_n}{B_n} \quad \text{(частное, если } B_n \neq 0\text{)}
 \end{aligned}
 $$
 
-Если $A$ и $B$ имеют соответственно пределы $a$ и $b$, у нас есть следующие отношения между суммами, разностями, произведениями и частями последовательностей и их соответствующими пределами: 
+**Важно:** Это **определения**, а не теоремы. Мы просто договариваемся складывать, вычитать, умножать и делить последовательности поэлементно.
+
+### Пример
+
+Даны последовательности:
+- $A_n = n$ (натуральные числа: $1, 2, 3, 4, \ldots$)
+- $B_n = n^2$ (квадраты: $1, 4, 9, 16, \ldots$)
+
+Тогда:
+- $(A + B)_n = n + n^2$ дает последовательность $(2, 6, 12, 20, \ldots)$
+- $(A \cdot B)_n = n \cdot n^2 = n^3$ дает последовательность $(1, 8, 27, 64, \ldots)$
+
+### Теоремы о пределах
+
+Если $\lim_{n \to \infty} A_n = a$ и $\lim_{n \to \infty} B_n = b$, то:
 
 $$
 \begin{aligned}
-&\lim_{n \to \infty} (A + B)_n = \lim_{n \to \infty} A_n + \lim_{n \to \infty} B_n = a + b\\
-&\lim_{n \to \infty} (A - B)_n = \lim_{n \to \infty} A_n - \lim_{n \to \infty} B_n = a - b \\
-&\lim_{n \to \infty} (AB)_n = \left(\lim_{n \to \infty} A_n\right) \left(\lim_{n \to \infty} B_n\right) = ab \\
-&\lim_{n \to \infty} \left(\frac{A}{B}\right)_n = \frac{\lim_{n \to \infty} A_n}{\lim_{n \to \infty} B_n} = \frac{a}{b}
+&\lim_{n \to \infty} (A + B)_n = a + b \quad \text{(предел суммы = сумме пределов)}\\
+&\lim_{n \to \infty} (A - B)_n = a - b \quad \text{(предел разности = разности пределов)}\\
+&\lim_{n \to \infty} (A \cdot B)_n = ab \quad \text{(предел произведения = произведению пределов)}\\
+&\lim_{n \to \infty} \left(\frac{A}{B}\right)_n = \frac{a}{b} \quad \text{(предел частного = частному пределов, если } b \neq 0\text{)}
 \end{aligned}
 $$
 
-(см. [доказательсва](./proofs.md))
+**Это уже теоремы**, которые требуют доказательства (см. [доказательства](./proofs.md)).
 
 ## Асимптотическое равенство
 
