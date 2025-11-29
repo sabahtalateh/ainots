@@ -48,4 +48,6 @@ $$\lim_{n \to \infty} x_n = A$$
 
 $$\forall \varepsilon > 0 \quad \exists N_\varepsilon \in \mathbb{N}: \quad \forall n \in \mathbb{N} \, (n > N_\varepsilon \Longrightarrow |x_n - A| < \varepsilon)$$
 
-## Определение в $\varepsilon-\vardelta$
+## Определение по Коши (ε-δ определение)
+
+
