@@ -44,4 +44,4 @@ $$\lim_{n \to \infty} x_n = A$$
 
 **Определение в кванторах:**
 
-$$\forall \varepsilon > 0 \quad \exists N_\varepsilon \in \mathbb{N}: \quad \forall n \in \mathbb{N}, \, n > N_\varepsilon \Longrightarrow |x_n - A| < \varepsilon$$
+$$\forall \varepsilon > 0 \quad \exists N_\varepsilon \in \mathbb{N}: \quad \forall n \in \mathbb{N} \, (n > N_\varepsilon \Longrightarrow |x_n - A| < \varepsilon)$$
