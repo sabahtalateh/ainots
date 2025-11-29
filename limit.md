@@ -32,7 +32,7 @@ $$1, \frac{1}{2}, \frac{1}{3}, \frac{1}{4}, \frac{1}{5}, ...$$
 
 Вычислим $N_\varepsilon = \lceil 1/0.05 \rceil = 20$. Все элементы последовательности начиная с номера **20** будут отличаться от предела $0$ меньше чем на $\varepsilon = 0.05$.
 
-График $x \in [1, 60]$.
+График $x \in [10, 80]$.
 
 <img src="./images/lime005.png" width="600px">
 
@@ -47,3 +47,5 @@ $$\lim_{n \to \infty} x_n = A$$
 **Определение в кванторах:**
 
 $$\forall \varepsilon > 0 \quad \exists N_\varepsilon \in \mathbb{N}: \quad \forall n \in \mathbb{N} \, (n > N_\varepsilon \Longrightarrow |x_n - A| < \varepsilon)$$
+
+## Определение в $\varepsilon-\vardelta$
