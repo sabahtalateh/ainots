@@ -27,3 +27,27 @@
 3. $\exists 1 \in \mathbb{R}, 1 \neq 0 : \forall a \in \mathbb{R} \to 1 \cdot a = a$;
 
 4. $\forall a \in \mathbb{R}, a \neq 0 \to \exists \frac{1}{a} \in \mathbb{R} : a \cdot \frac{1}{a} = 1$ (число $\frac{1}{a}$ называется **обратным числом для $a$**).
+
+#### 3°. Аксиомы порядка (для любых $a, b \in \mathbb{R}$ установлено отношение $a \leqslant b$ или $b \leqslant a$)
+
+1. $\forall a, b \in \mathbb{R} : a \leqslant b, b \leqslant a \to a = b$;
+
+2. $\forall a, b, c \in \mathbb{R} : a \leqslant b, b \leqslant c \to a \leqslant c$;
+
+3. $\forall a, b, c \in \mathbb{R} : a \leqslant b \to a + c \leqslant b + c$;
+
+4. $\forall a, b \in \mathbb{R} : 0 \leqslant a, 0 \leqslant b \to 0 \leqslant ab$.
+
+$a \leqslant b$ можно записывать также в виде $b \geqslant a$;
+
+$a \leqslant b$ при $a \neq b$ можно записывать в виде $a < b$ или $b > a$.
+
+#### 4°. Аксиома непрерывности (принцип Дедекинда)
+
+Пусть $A, B$ – непустые подмножества $\mathbb{R}$ такие, что
+
+$$\forall a \in A, b \in B \to a \leqslant b.$$
+
+Тогда существует $c \in \mathbb{R}$ такое, что
+
+$$\forall a \in A, b \in B \to a \leqslant c \leqslant b.$$
