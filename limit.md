@@ -85,3 +85,5 @@ $$\forall \varepsilon > 0 \quad \exists \delta > 0: \quad \forall x \in \mathbb{
 | Предел | При $n \to \infty$ | При $x \to a$ (в любой точке) |
 | Параметр | $N$ — номер элемента | $\delta$ — радиус окрестности |
 | Условие | $n > N$ | $0 < \|x - a\| < \delta$ |
+
+<img src="./images/lims.png" width="600px">
