@@ -62,7 +62,7 @@ $$\frac{1}{n} < \varepsilon$$
 
 $$n > \frac{1}{\varepsilon}$$
 
-**Вывод:** Для любого $\varepsilon > 0$ берём $N = \left\lceil\frac{1}{\varepsilon}\right\rceil$. Тогда для всех $n > N$ выполняется:
+**Вывод:** Для любого $\varepsilon > 0$ берём $N = \lceil\frac{1}{\varepsilon}\rceil$. Тогда для всех $n > N$ выполняется:
 
 $$\left|\frac{2n + 1}{n} - 2\right| = \frac{1}{n} < \frac{1}{N} \leq \varepsilon$$
 
