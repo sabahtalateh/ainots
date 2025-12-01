@@ -194,7 +194,7 @@ $$\frac{|x - 1|}{|x|} < 2|x - 1|$$
 
 $$|x - 1| < \frac{\varepsilon}{2}$$
 
-**Вывод:** Для любого $\varepsilon > 0$ берём $\delta = \min\left\{\frac{\varepsilon}{2}, \frac{1}{2}\right\}$. Тогда для всех $x$, удовлетворяющих условию $0 < |x - 1| < \delta$, выполняется:
+**Вывод:** Для любого $\varepsilon > 0$ берём $\delta = \min\left(\frac{\varepsilon}{2}, \frac{1}{2}\right)$. Тогда для всех $x$, удовлетворяющих условию $0 < |x - 1| < \delta$, выполняется:
 
 $$\left|\frac{2x + 1}{x} - 3\right| = \frac{|x - 1|}{|x|} < 2|x - 1| < 2 \cdot \frac{\varepsilon}{2} = \varepsilon$$
 
@@ -205,7 +205,7 @@ $$\left|\frac{2x + 1}{x} - 3\right| = \frac{|x - 1|}{|x|} < 2|x - 1| < 2 \cdot \
 - Если $\varepsilon = 0.2$, то $\delta = 0.1$: при $|x - 1| < 0.1$ получаем $\left|\frac{2x+1}{x} - 3\right| < 0.2$
 - Если $\varepsilon = 0.1$, то $\delta = 0.05$: при $|x - 1| < 0.05$ получаем $\left|\frac{2x+1}{x} - 3\right| < 0.1$
 
-**Ключевая формула:** $\delta(\varepsilon) = \min\left\{\frac{\varepsilon}{2}, \frac{1}{2}\right\}$ работает для любого $\varepsilon > 0$.
+**Ключевая формула:** $\delta(\varepsilon) = \min\left(\frac{\varepsilon}{2}, \frac{1}{2}\right)$ работает для любого $\varepsilon > 0$.
 
 **Геометрический смысл:**
 
@@ -247,7 +247,7 @@ $$\forall \varepsilon > 0 \quad \exists \delta > 0: \quad \forall x \in \mathbb{
 | **Параметр** | $N$ — "начиная откуда" | $\delta$ — "насколько близко к точке" |
 | **Условие** | $n > N$ или $x > N$ | $0 < \|x - a\| < \delta$ |
 | **Смысл N/δ** | Удаленность (как далеко уйти) | Близость (как близко к точке) |
-| **Формула связи** | $N(\varepsilon) = \lceil 1/\varepsilon \rceil$ | $\delta(\varepsilon) = \min\{\varepsilon/2, 1/2\}$ |
+| **Формула связи** | $N(\varepsilon) = \lceil 1/\varepsilon \rceil$ | $\delta(\varepsilon) = \min(\varepsilon/2, 1/2)$ |
 
 ## Алгебра последовательностей и пределов
 
