@@ -247,7 +247,7 @@ $$\forall \varepsilon > 0 \quad \exists \delta > 0: \quad \forall x \in \mathbb{
 | **Параметр** | $N$ — "начиная откуда" | $\delta$ — "насколько близко к точке" |
 | **Условие** | $n > N$ или $x > N$ | $0 < \|x - a\| < \delta$ |
 | **Смысл N/δ** | Удаленность (как далеко уйти) | Близость (как близко к точке) |
-| **Формула связи** | $N(\varepsilon) = \lceil 1/\varepsilon \rceil$ | $\delta(\varepsilon) = \varepsilon/3$ |
+| **Формула связи** | $N(\varepsilon) = \lceil 1/\varepsilon \rceil$ | $\delta(\varepsilon) = \min\{\varepsilon/2, 1/2\}$ |
 
 ## Алгебра последовательностей и пределов
 
