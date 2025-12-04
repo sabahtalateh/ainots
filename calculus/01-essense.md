@@ -116,13 +116,13 @@ $$\text{маленький путь} = v(t) \cdot dt$$
 - **Высота** $\approx x^2$ (значение функции в точке $x$)
 - **Ширина** $= dx$
 
-<img src="../images/dx.png">
-
 Значит:
 $$dA \approx x^2 \cdot dx$$
 
 Или, переписав:
 $$\frac{dA}{dx} \approx x^2$$
+
+<img src="../images/dx.png">
 
 ### Конкретный пример
 
