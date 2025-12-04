@@ -122,7 +122,7 @@ $$\text{маленький путь} = v(t) \cdot dt$$
 $$dA \approx x^2 \cdot dx$$
 
 Или, переписав:
-$$\frac{dA}{dx} \approx x^2$$
+$$\frac{dA}{dx} \approx x^2$$ это **изменение площади при изменении $x$**
 
 <img src="../images/dx.png">
 
