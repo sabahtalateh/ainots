@@ -37,7 +37,7 @@ $$S = \frac{1}{2} \cdot R \cdot 2\pi R = \pi R^2$$
 $$S = \frac{1}{2} \cdot 2 \cdot 2\pi \cdot 2 = \frac{1}{2} \cdot 2 \cdot 4\pi = 4\pi = \pi \cdot 2^2$$
 
 <details>
-<summary><b>Подробнее: почему $0 \times \infty$ даёт конечный ответ?</b></summary>
+<summary><b>Подробнее: почему 0 × ∞ даёт конечный ответ?</b></summary>
 
 Парадокс кажущийся:
 - При $dr \to 0$ площадь каждого прямоугольника $2\pi r \cdot dr \to 0$
