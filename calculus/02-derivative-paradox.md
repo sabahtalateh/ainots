@@ -74,33 +74,21 @@ $dt = 0.1$
 
 Найдём производную функции $s(t) = t^3$.
 
-**Вычисляем отношение:**
+По формуле куба суммы: $(a + b)^3 = a^3 + 3a^2b + 3ab^2 + b^3$
 
-$$\frac{s(t + dt) - s(t)}{dt} = \frac{(t + dt)^3 - t^3}{dt}$$
+$$\frac{s(t + dt) - s(t)}{dt} = \frac{(t + dt)^3 - t^3}{dt} = \frac{t^3 + 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3 - t^3}{dt} =$$
 
-**Раскрываем $(t + dt)^3$:**
-
-По формуле куба суммы $(a + b)^3 = a^3 + 3a^2b + 3ab^2 + b^3$:
-
-$$(t + dt)^3 = t^3 + 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3$$
-
-**Вычитаем $t^3$:**
-
-$$(t + dt)^3 - t^3 = t^3 + 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3 - t^3 = 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3$$
-
-**Делим на $dt$:**
-
-$$\frac{3t^2 \cdot dt + 3t \cdot dt^2 + dt^3}{dt} = 3t^2 + 3t \cdot dt + dt^2$$
+$$= \frac{3t^2 \cdot dt + 3t \cdot dt^2 + dt^3}{dt} = \frac{dt(3t^2 + 3t \cdot dt + dt^2)}{dt} = 3t^2 + 3t \cdot dt + dt^2$$
 
 **Берём предел при $dt \to 0$:**
 
-При $dt \to 0$ члены $3t \cdot dt$ и $dt^2$ исчезают, остаётся:
+При $dt \to 0$ члены $3t \cdot dt$ и $dt^2$ исчезают:
 
 $$s'(t) = 3t^2$$
 
 **Подставляем $t = 2$:**
 
-$$s'(2) = 3 \cdot 2^2 = 3 \cdot 4 = 12$$
+$$s'(2) = 3 \cdot 2^2 = 12$$
 
 | $dt$ | Результат |
 |------|-----------|
