@@ -84,9 +84,13 @@ $$\frac{s(t + dt) - s(t)}{dt} = \frac{(t + dt)^3 - t^3}{dt}$$
 
 $$(t + dt)^3 = t^3 + 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3$$
 
-**Вычитаем $t^3$ и делим на $dt$:**
+**Вычитаем $t^3$:**
 
-$$\frac{(t + dt)^3 - t^3}{dt} = \frac{3t^2 \cdot dt + 3t \cdot dt^2 + dt^3}{dt} = 3t^2 + 3t \cdot dt + dt^2$$
+$$(t + dt)^3 - t^3 = t^3 + 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3 - t^3 = 3t^2 \cdot dt + 3t \cdot dt^2 + dt^3$$
+
+**Делим на $dt$:**
+
+$$\frac{3t^2 \cdot dt + 3t \cdot dt^2 + dt^3}{dt} = 3t^2 + 3t \cdot dt + dt^2$$
 
 **Берём предел при $dt \to 0$:**
 
