@@ -5,7 +5,7 @@
 Требуется приблизить интеграл
 
 $$
-\int_a^b f(x)\,dx
+\int_a^b f(x)dx
 $$
 
 по трём узлам: $x_0 = a$, $x_1 = \frac{a+b}{2}$, $x_2 = b$. Введём шаг сетки:
@@ -20,16 +20,16 @@ $$
 
 ## 2. Интерполяционный полином Лагранжа
 
-Строим полином второй степени $P_2(x)$, совпадающий с $f$ в узлах $x_0,\, x_1,\, x_2$:
+Строим полином второй степени $P_2(x)$, совпадающий с $f$ в узлах $x_0,x_1, x_2$:
 
 $$
-P_2(x) = f(x_0)\,L_0(x) + f(x_1)\,L_1(x) + f(x_2)\,L_2(x),
+P_2(x) = f(x_0)L_0(x) + f(x_1)L_1(x) + f(x_2)L_2(x),
 $$
 
 где $L_i(x)$ — базисные полиномы Лагранжа:
 
 $$
-L_i(x) = \prod_{j \neq i} \frac{x - x_j}{x_i - x_j}, \quad i = 0,\,1,\,2.
+L_i(x) = \prod_{j \neq i} \frac{x - x_j}{x_i - x_j}, \quad i = 0,1,2.
 $$
 
 В явном виде:
@@ -41,22 +41,22 @@ $$
 Приближение интеграла:
 
 $$
-\int_a^b f(x)\,dx \approx \int_a^b P_2(x)\,dx = f(x_0)\int_a^b L_0(x)\,dx + f(x_1)\int_a^b L_1(x)\,dx + f(x_2)\int_a^b L_2(x)\,dx.
+\int_a^b f(x)dx \approx \int_a^b P_2(x)dx = f(x_0)\int_a^b L_0(x)dx + f(x_1)\int_a^b L_1(x)dx + f(x_2)\int_a^b L_2(x)dx.
 $$
 
 Обозначим веса
 
 $$
-w_i = \int_a^b L_i(x)\,dx.
+w_i = \int_a^b L_i(x)dx.
 $$
 
 Тогда
 
 $$
-\int_a^b f(x)\,dx \approx w_0 f(x_0) + w_1 f(x_1) + w_2 f(x_2).
+\int_a^b f(x)dx \approx w_0 f(x_0) + w_1 f(x_1) + w_2 f(x_2).
 $$
 
-Нужно вычислить $w_0,\, w_1,\, w_2$.
+Нужно вычислить $w_0, w_1, w_2$.
 
 ---
 
@@ -71,7 +71,7 @@ $$
 Тогда $\frac{du}{dx} = 1$, то есть $du = dx$. При $x = a$ получаем $u = -h$, при $x = b$ — $u = h$. Поэтому
 
 $$
-\int_a^b L_i(x)\,dx = \int_{-h}^{h} L_i(u)\,du.
+\int_a^b L_i(x)dx = \int_{-h}^{h} L_i(u)du.
 $$
 
 Связь старых и новых переменных:
@@ -90,23 +90,23 @@ L_1(u) = \frac{(u+h)(u-h)}{h\cdot(-h)} = \frac{u^2 - h^2}{-h^2} = \frac{h^2 - u^
 $$
 
 $$
-L_2(u) = \frac{(u+h)u}{(2h)\,h} = \frac{u(u+h)}{2h^2}.
+L_2(u) = \frac{(u+h)u}{(2h)h} = \frac{u(u+h)}{2h^2}.
 $$
 
 ---
 
-## 4. Вычисление интегралов $\displaystyle \int_{-h}^{h} L_i(u)\,du$
+## 4. Вычисление интегралов $\displaystyle \int_{-h}^{h} L_i(u)du$
 
 **Интеграл для $L_0$:**
 
 $$
-\int_{-h}^{h} \frac{u(u-h)}{2h^2}\,du = \frac{1}{2h^2} \int_{-h}^{h} (u^2 - uh)\,du.
+\int_{-h}^{h} \frac{u(u-h)}{2h^2}du = \frac{1}{2h^2} \int_{-h}^{h} (u^2 - uh)du.
 $$
 
 Функция $u^2$ чётная, $uh$ нечётная; интеграл по $[-h,h]$ от нечётной равен нулю. Поэтому
 
 $$
-\int_{-h}^{h} (u^2 - uh)\,du = \int_{-h}^{h} u^2\,du = 2\int_0^h u^2\,du = 2\cdot\frac{h^3}{3} = \frac{2h^3}{3},
+\int_{-h}^{h} (u^2 - uh)du = \int_{-h}^{h} u^2du = 2\int_0^h u^2du = 2\cdot\frac{h^3}{3} = \frac{2h^3}{3},
 $$
 
 и
@@ -118,13 +118,13 @@ $$
 **Интеграл для $L_1$:**
 
 $$
-\int_{-h}^{h} \frac{h^2 - u^2}{h^2}\,du = \frac{1}{h^2} \int_{-h}^{h} (h^2 - u^2)\,du.
+\int_{-h}^{h} \frac{h^2 - u^2}{h^2}du = \frac{1}{h^2} \int_{-h}^{h} (h^2 - u^2)du.
 $$
 
 Подынтегральная функция чётная:
 
 $$
-\int_{-h}^{h} (h^2 - u^2)\,du = 2\int_0^h (h^2 - u^2)\,du = 2\left[ h^2 u - \frac{u^3}{3} \right]_0^h = 2\left( h^3 - \frac{h^3}{3} \right) = \frac{4h^3}{3},
+\int_{-h}^{h} (h^2 - u^2)du = 2\int_0^h (h^2 - u^2)du = 2\left[ h^2 u - \frac{u^3}{3} \right]_0^h = 2\left( h^3 - \frac{h^3}{3} \right) = \frac{4h^3}{3},
 $$
 
 и
@@ -136,13 +136,13 @@ $$
 **Интеграл для $L_2$:**
 
 $$
-\int_{-h}^{h} \frac{u(u+h)}{2h^2}\,du = \frac{1}{2h^2} \int_{-h}^{h} (u^2 + uh)\,du.
+\int_{-h}^{h} \frac{u(u+h)}{2h^2}du = \frac{1}{2h^2} \int_{-h}^{h} (u^2 + uh)du.
 $$
 
 Снова $u^2$ даёт вклад, $uh$ — нет:
 
 $$
-\int_{-h}^{h} (u^2 + uh)\,du = \int_{-h}^{h} u^2\,du = \frac{2h^3}{3},
+\int_{-h}^{h} (u^2 + uh)du = \int_{-h}^{h} u^2du = \frac{2h^3}{3},
 $$
 
 и
@@ -160,14 +160,14 @@ $$
 Подставляем веса и $x_0 = a$, $x_1 = \frac{a+b}{2}$, $x_2 = b$, $h = \frac{b-a}{2}$:
 
 $$
-\int_a^b f(x)\,dx \approx \frac{h}{3}\,f(a) + \frac{4h}{3}\,f\!\left(\frac{a+b}{2}\right) + \frac{h}{3}\,f(b).
+\int_a^b f(x)dx \approx \frac{h}{3}f(a) + \frac{4h}{3}f\!\left(\frac{a+b}{2}\right) + \frac{h}{3}f(b).
 $$
 
 Выносим $\frac{h}{3}$ и заменяем $h = \frac{b-a}{2}$:
 
 $$
 \boxed{
-\int_a^b f(x)\,dx \approx \frac{b-a}{6}\left( f(a) + 4f\!\left(\frac{a+b}{2}\right) + f(b) \right).
+\int_a^b f(x)dx \approx \frac{b-a}{6}\left( f(a) + 4f\!\left(\frac{a+b}{2}\right) + f(b) \right).
 }
 $$
 
@@ -204,7 +204,7 @@ $$
 Исходный интеграл по $x$:
 
 $$
-\int_a^b L_i(x)\,dx.
+\int_a^b L_i(x)dx.
 $$
 
 Подстановка:
@@ -212,13 +212,13 @@ $$
 - по правилу замены переменной пишем $dx = du$, то есть
 
 $$
-\int_a^b L_i(x)\,dx = \int_{u(a)}^{u(b)} L_i(u)\,du;
+\int_a^b L_i(x)dx = \int_{u(a)}^{u(b)} L_i(u)du;
 $$
 
 - при $x = a$ получается $u = -h$, при $x = b$ — $u = h$, поэтому
 
 $$
-\int_a^b L_i(x)\,dx = \int_{-h}^{h} L_i(u)\,du.
+\int_a^b L_i(x)dx = \int_{-h}^{h} L_i(u)du.
 $$
 
 Итого: **«замена $dx$ на $du$»** — это то, что $du = dx$ (коэффициент 1), а пределы мы пересчитываем по формуле $u = x - x_1$.
@@ -228,13 +228,13 @@ $$
 По определению, при замене $x = \varphi(u)$ пишут:
 
 $$
-\int f(x)\,dx = \int f(\varphi(u))\,\varphi'(u)\,du.
+\int f(x)dx = \int f(\varphi(u))\varphi'(u)du.
 $$
 
 У нас $x = u + x_1$, то есть $\varphi(u) = u + x_1$, поэтому $\varphi'(u) = 1$ и
 
 $$
-dx = \varphi'(u)\,du = 1\cdot du = du.
+dx = \varphi'(u)du = 1\cdot du = du.
 $$
 
 Так что замена **$dx$ на $du$** — это не договорённость, а следствие того, что новая переменная введена по формуле $u = x - \text{const}$: производная по $x$ равна 1, значит $du = dx$.
