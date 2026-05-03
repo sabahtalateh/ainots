@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>det 3D — откуда 6 слагаемых</title>
+  <style>
+    html,body { margin:0; height:100%; overflow:hidden; background:#1a1d23; color:#ddd; font-family:system-ui,sans-serif; }
+    canvas { display:block; }
+    #ctrl {
+      position:absolute; top:0; right:0; bottom:0; width:240px;
+      background:rgba(14,16,22,0.97); border-left:1px solid #252840;
+      padding:12px; font-size:13px; user-select:none;
+      display:flex; flex-direction:column; gap:9px; overflow-y:auto;
+    }
+    #ctrl h3 { margin:0; font-size:13px; color:#a5c8ff; }
+    #ctrl table { border-collapse:collapse; }
+    #ctrl td { padding:2px 2px; vertical-align:middle; }
+    .va{color:#4fc3f7;font-weight:bold;} .vb{color:#ef9a9a;font-weight:bold;} .vc{color:#a5d6a7;font-weight:bold;}
+    .btn { background:#22263a; border:1px solid #3a4060; color:#ccc; border-radius:4px;
+           width:20px; height:20px; cursor:pointer; font-size:13px; line-height:1; padding:0; text-align:center; }
+    .btn:hover { background:#3a4060; color:#fff; }
+    #det-row { font-size:12px; color:#aaa; border-top:1px solid #252840; padding-top:8px; line-height:2; }
+    #term-section { border-top:1px solid #252840; padding-top:8px; }
+    #term-section h3 { margin-bottom:6px; }
+    .term-btn {
+      display:flex; align-items:center; gap:6px;
+      padding:5px 8px; border-radius:5px; cursor:pointer;
+      border:1.5px solid transparent; margin-bottom:4px;
+      font-size:11px; background:rgba(30,34,50,0.6);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .term-btn:hover { background:rgba(50,58,90,0.7); }
+    .term-btn.active { border-color: var(--tc); background: rgba(60,70,100,0.5); }
+    .term-dot { width:10px; height:10px; border-radius:2px; flex-shrink:0; }
+    .term-sign { font-weight:bold; font-size:13px; width:12px; }
+    #all-btn {
+      padding:5px 0; text-align:center; border-radius:5px; cursor:pointer;
+      background:rgba(30,34,50,0.6); border:1.5px solid #3a4060;
+      color:#8899bb; font-size:11px; margin-top:2px;
+    }
+    #all-btn:hover { background:rgba(50,58,90,0.7); color:#aabbdd; }
+    #all-btn.active { border-color:#a5c8ff; color:#a5c8ff; }
+    #hint-t { font-size:11px; color:#384; margin-top:auto; line-height:1.7; }
+  </style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="ctrl">
+  <h3>Векторы</h3>
+  <table>
+    <tr>
+      <td><span class="va">a</span></td>
+      <td>(<span id="a0v">3</span></td>
+      <td><button class="btn" data-v="A" data-i="0" data-d="-1">−</button><button class="btn" data-v="A" data-i="0" data-d="1">+</button></td>
+      <td><span id="a1v">1</span></td>
+      <td><button class="btn" data-v="A" data-i="1" data-d="-1">−</button><button class="btn" data-v="A" data-i="1" data-d="1">+</button></td>
+      <td><span id="a2v">1</span>)</td>
+      <td><button class="btn" data-v="A" data-i="2" data-d="-1">−</button><button class="btn" data-v="A" data-i="2" data-d="1">+</button></td>
+    </tr>
+    <tr>
+      <td><span class="vb">b</span></td>
+      <td>(<span id="b0v">1</span></td>
+      <td><button class="btn" data-v="B" data-i="0" data-d="-1">−</button><button class="btn" data-v="B" data-i="0" data-d="1">+</button></td>
+      <td><span id="b1v">3</span></td>
+      <td><button class="btn" data-v="B" data-i="1" data-d="-1">−</button><button class="btn" data-v="B" data-i="1" data-d="1">+</button></td>
+      <td><span id="b2v">1</span>)</td>
+      <td><button class="btn" data-v="B" data-i="2" data-d="-1">−</button><button class="btn" data-v="B" data-i="2" data-d="1">+</button></td>
+    </tr>
+    <tr>
+      <td><span class="vc">c</span></td>
+      <td>(<span id="c0v">2</span></td>
+      <td><button class="btn" data-v="C" data-i="0" data-d="-1">−</button><button class="btn" data-v="C" data-i="0" data-d="1">+</button></td>
+      <td><span id="c1v">1</span></td>
+      <td><button class="btn" data-v="C" data-i="1" data-d="-1">−</button><button class="btn" data-v="C" data-i="1" data-d="1">+</button></td>
+      <td><span id="c2v">3</span>)</td>
+      <td><button class="btn" data-v="C" data-i="2" data-d="-1">−</button><button class="btn" data-v="C" data-i="2" data-d="1">+</button></td>
+    </tr>
+  </table>
+  <div id="det-row">
+    det = <b style="color:#f1c40f" id="detval">?</b><br>
+    <span style="color:#f1c40f">+сумма</span>: <b id="psum">?</b><br>
+    <span style="color:#64b5f6">−сумма</span>: <b id="nsum">?</b>
+  </div>
+  <div id="term-section">
+    <h3>Выбрать слагаемое:</h3>
+    <div id="term-btns"></div>
+    <div id="all-btn" class="active">▤ показать все</div>
+  </div>
+  <div id="hint-t">Тяни — вращение<br>Колёсико — зум<br>Клик на слагаемое — изолировать</div>
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById("c");
+  var ctx    = canvas.getContext("2d");
+  var SBW    = 240;
+
+  var A=[3,1,1], B=[1,3,1], C=[2,1,3];
+  var vecs={A:A,B:B,C:C};
+  var spans={
+    A:[document.getElementById("a0v"),document.getElementById("a1v"),document.getElementById("a2v")],
+    B:[document.getElementById("b0v"),document.getElementById("b1v"),document.getElementById("b2v")],
+    C:[document.getElementById("c0v"),document.getElementById("c1v"),document.getElementById("c2v")]
+  };
+
+  var TERMS=[
+    {sign:+1, lbl:"ax\u00b7by\u00b7cz", top:function(){return[A[0],B[1],C[2]];}, val:function(){return A[0]*B[1]*C[2];}, fc:"rgba(241,196,15,.18)", ec:"#f1c40f"},
+    {sign:+1, lbl:"ay\u00b7bz\u00b7cx", top:function(){return[C[0],A[1],B[2]];}, val:function(){return A[1]*B[2]*C[0];}, fc:"rgba(255,152, 0,.18)", ec:"#ff9800"},
+    {sign:+1, lbl:"az\u00b7bx\u00b7cy", top:function(){return[B[0],C[1],A[2]];}, val:function(){return A[2]*B[0]*C[1];}, fc:"rgba(255,213,79,.18)", ec:"#ffd54f"},
+    {sign:-1, lbl:"az\u00b7by\u00b7cx", top:function(){return[C[0],B[1],A[2]];}, val:function(){return A[2]*B[1]*C[0];}, fc:"rgba(66,165,245,.18)", ec:"#42a5f5"},
+    {sign:-1, lbl:"ax\u00b7bz\u00b7cy", top:function(){return[A[0],C[1],B[2]];}, val:function(){return A[0]*B[2]*C[1];}, fc:"rgba(171,71,188,.18)", ec:"#ab47bc"},
+    {sign:-1, lbl:"ay\u00b7bx\u00b7cz", top:function(){return[B[0],A[1],C[2]];}, val:function(){return A[1]*B[0]*C[2];}, fc:"rgba(38,166,154,.18)", ec:"#26a69a"}
+  ];
+
+  /* extended labels showing which component from which vector */
+  var TERM_XPLAIN=[
+    "x: a\u2093  y: b\u1D67  z: c\u1D69",
+    "x: c\u2093  y: a\u1D67  z: b\u1D69",
+    "x: b\u2093  y: c\u1D67  z: a\u1D69",
+    "x: c\u2093  y: b\u1D67  z: a\u1D69",
+    "x: a\u2093  y: c\u1D67  z: b\u1D69",
+    "x: b\u2093  y: a\u1D67  z: c\u1D69"
+  ];
+
+  var activeTerm = -1; /* -1 = all */
+
+  /* ── sidebar term buttons ── */
+  var termBtnsEl = document.getElementById("term-btns");
+  var allBtnEl   = document.getElementById("all-btn");
+  var termBtnEls = [];
+  TERMS.forEach(function(t, i){
+    var el = document.createElement("div");
+    el.className = "term-btn";
+    el.style.setProperty("--tc", t.ec);
+    el.innerHTML =
+      '<div class="term-dot" style="background:'+t.ec+'"></div>'+
+      '<span class="term-sign" style="color:'+t.ec+'">'+(t.sign>0?"+":"−")+'</span>'+
+      '<span style="color:'+t.ec+'">'+t.lbl+'</span>';
+    el.addEventListener("click", function(){
+      setActive(i === activeTerm ? -1 : i);
+    });
+    termBtnsEl.appendChild(el);
+    termBtnEls.push(el);
+  });
+  allBtnEl.addEventListener("click", function(){ setActive(-1); });
+
+  function setActive(idx){
+    activeTerm = idx;
+    termBtnEls.forEach(function(el,i){ el.classList.toggle("active", i===idx); });
+    allBtnEl.classList.toggle("active", idx===-1);
+  }
+
+  function updateUI(){
+    var d=A[0]*(B[1]*C[2]-B[2]*C[1])-A[1]*(B[0]*C[2]-B[2]*C[0])+A[2]*(B[0]*C[1]-B[1]*C[0]);
+    var ps=TERMS[0].val()+TERMS[1].val()+TERMS[2].val();
+    var ns=TERMS[3].val()+TERMS[4].val()+TERMS[5].val();
+    document.getElementById("detval").textContent=d;
+    document.getElementById("psum").textContent=ps;
+    document.getElementById("nsum").textContent=ns;
+  }
+  updateUI();
+
+  document.getElementById("ctrl").addEventListener("click",function(e){
+    var b=e.target.closest(".btn"); if(!b)return;
+    var v=b.dataset.v,i=+b.dataset.i,d=+b.dataset.d;
+    vecs[v][i]+=d; spans[v][i].textContent=vecs[v][i]; updateUI();
+  });
+
+  /* ── camera ── */
+  var cam={theta:0.45,phi:0.55};
+  var drag={active:false,x:0,y:0};
+  window.addEventListener("mousedown",function(e){
+    if(e.target.closest("#ctrl"))return;
+    drag.active=true; drag.x=e.clientX; drag.y=e.clientY;
+  });
+  window.addEventListener("mouseup",  function(){ drag.active=false; });
+  window.addEventListener("mousemove",function(e){
+    if(!drag.active)return;
+    cam.theta-=(e.clientX-drag.x)*0.007;
+    cam.phi  -=(e.clientY-drag.y)*0.007;
+    cam.phi=Math.max(0.05,Math.min(Math.PI/2-0.03,cam.phi));
+    drag.x=e.clientX; drag.y=e.clientY;
+  });
+  var gScale=1.0;
+  window.addEventListener("wheel",function(e){
+    gScale=Math.max(0.4,Math.min(2.2,gScale-e.deltaY*0.001));
+  },{passive:true});
+
+  /* Sarrus diagonal bounds for click detection (filled during drawSarrus) */
+  var sarrusDiagBounds = []; /* [{cx,cy,r}] center+radius per diagonal */
+
+  canvas.addEventListener("click", function(e){
+    if(drag.active) return;
+    var mx=e.clientX, my=e.clientY;
+    for(var i=0;i<sarrusDiagBounds.length;i++){
+      var b=sarrusDiagBounds[i];
+      if(Math.hypot(mx-b.cx,my-b.cy)<b.r){
+        setActive(i===activeTerm ? -1 : i);
+        return;
+      }
+    }
+  });
+
+  /* ── 3D math ── */
+  function project(p){
+    var ct=Math.cos(cam.theta),st=Math.sin(cam.theta);
+    var cp=Math.cos(cam.phi),  sp=Math.sin(cam.phi);
+    var rx=ct*p[0]+st*p[1], ry=-st*p[0]+ct*p[1];
+    return [rx,-sp*ry+cp*p[2]];
+  }
+  function scr(p3,sc,ox,oy){var p=project(p3);return{x:ox+p[0]*sc,y:oy-p[1]*sc};}
+  function line3(p,q,sc,ox,oy){var a=scr(p,sc,ox,oy),b=scr(q,sc,ox,oy);ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);}
+  function arrow3(f,t,sc,ox,oy){
+    var a=scr(f,sc,ox,oy),b=scr(t,sc,ox,oy);
+    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    var dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy);if(len<1)return;
+    var ux=dx/len,uy=dy/len,hs=7;
+    ctx.beginPath();ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-ux*hs-uy*hs*0.4,b.y-uy*hs+ux*hs*0.4);
+    ctx.lineTo(b.x-ux*hs+uy*hs*0.4,b.y-uy*hs-ux*hs*0.4);
+    ctx.closePath();ctx.fill();
+  }
+  function lbl3(p3,text,sc,ox,oy,dx,dy){var s=scr(p3,sc,ox,oy);ctx.fillText(text,s.x+(dx||0),s.y+(dy||0));}
+  function face3(pts,color,sc,ox,oy){
+    var ps=pts.map(function(p){return scr(p,sc,ox,oy);});
+    ctx.beginPath();ctx.moveTo(ps[0].x,ps[0].y);
+    for(var i=1;i<ps.length;i++)ctx.lineTo(ps[i].x,ps[i].y);
+    ctx.closePath();ctx.fillStyle=color;ctx.fill();
+  }
+
+  function drawGrid(sc,ox,oy){
+    var G=4;
+    ctx.beginPath();ctx.strokeStyle="rgba(120,130,160,.18)";ctx.lineWidth=0.8;
+    for(var i=-G;i<=G;i++){line3([i,-G,0],[i,G,0],sc,ox,oy);line3([-G,i,0],[G,i,0],sc,ox,oy);}
+    ctx.stroke();
+  }
+  function drawAxes(sc,ox,oy){
+    var L=4.5;ctx.lineWidth=1.8;ctx.font="bold 12px system-ui,sans-serif";
+    ctx.strokeStyle="#e74c3c";ctx.fillStyle="#e74c3c";
+    arrow3([0,0,0],[L,0,0],sc,ox,oy);lbl3([L+.2,0,0],"x",sc,ox,oy,0,4);
+    ctx.strokeStyle="#2ecc71";ctx.fillStyle="#2ecc71";
+    arrow3([0,0,0],[0,L,0],sc,ox,oy);lbl3([0,L+.2,0],"y",sc,ox,oy,0,4);
+    ctx.strokeStyle="#3498db";ctx.fillStyle="#3498db";
+    arrow3([0,0,0],[0,0,L],sc,ox,oy);lbl3([0,0,L+.2],"z",sc,ox,oy,0,4);
+  }
+  function drawParallelepiped(sc,ox,oy,alpha){
+    var O=[0,0,0];
+    var AB=[A[0]+B[0],A[1]+B[1],A[2]+B[2]];
+    var AC=[A[0]+C[0],A[1]+C[1],A[2]+C[2]];
+    var BC=[B[0]+C[0],B[1]+C[1],B[2]+C[2]];
+    var ABC=[A[0]+B[0]+C[0],A[1]+B[1]+C[1],A[2]+B[2]+C[2]];
+    var a=alpha;
+    face3([O,A,AB,B],"rgba(241,196,15,"+(0.28*a)+")",sc,ox,oy);
+    face3([A,AB,ABC,AC],"rgba(79,195,247,"+(0.15*a)+")",sc,ox,oy);
+    face3([B,AB,ABC,BC],"rgba(239,154,154,"+(0.15*a)+")",sc,ox,oy);
+    face3([C,AC,ABC,BC],"rgba(165,214,167,"+(0.18*a)+")",sc,ox,oy);
+    face3([O,A,AC,C],"rgba(79,195,247,"+(0.08*a)+")",sc,ox,oy);
+    face3([O,B,BC,C],"rgba(239,154,154,"+(0.08*a)+")",sc,ox,oy);
+    var eds=[[O,A],[O,B],[O,C],[A,AB],[A,AC],[B,AB],[B,BC],[C,AC],[C,BC],[AB,ABC],[AC,ABC],[BC,ABC]];
+    ctx.beginPath();ctx.strokeStyle="rgba(200,200,220,"+(0.6*a)+")";ctx.lineWidth=1.2;
+    eds.forEach(function(e){line3(e[0],e[1],sc,ox,oy);});ctx.stroke();
+    if(a>0.4){
+      ctx.lineWidth=2.5;ctx.font="bold 13px system-ui,sans-serif";
+      ctx.strokeStyle="rgba(79,195,247,"+a+")";ctx.fillStyle="rgba(79,195,247,"+a+")";
+      arrow3(O,A,sc,ox,oy);lbl3([A[0]/2,A[1]/2,A[2]/2],"a",sc,ox,oy,-12,-4);
+      ctx.strokeStyle="rgba(239,154,154,"+a+")";ctx.fillStyle="rgba(239,154,154,"+a+")";
+      arrow3(O,B,sc,ox,oy);lbl3([B[0]/2,B[1]/2,B[2]/2],"b",sc,ox,oy,-12,4);
+      ctx.strokeStyle="rgba(165,214,167,"+a+")";ctx.fillStyle="rgba(165,214,167,"+a+")";
+      arrow3(O,C,sc,ox,oy);lbl3([C[0]/2,C[1]/2,C[2]/2],"c",sc,ox,oy,6,0);
+      var pO=scr([0,0,0],sc,ox,oy);
+      ctx.fillStyle="#f1c40f";ctx.beginPath();ctx.arc(pO.x,pO.y,4,0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  /* draw one term box; highlight = 1 (bright), 0.15 (dimmed) */
+  function drawTermBox(sc,ox,oy,term,highlight){
+    var h = highlight === undefined ? 1 : highlight;
+    var tp=term.top(),x=tp[0],y=tp[1],z=tp[2];
+    var O=[0,0,0],Ax=[x,0,0],By=[0,y,0],Cz=[0,0,z];
+    var AxBy=[x,y,0],AxCz=[x,0,z],ByCz=[0,y,z],Top=[x,y,z];
+
+    /* parse fill color and apply highlight */
+    var fAlpha = 0.18 * h * (h < 0.5 ? 0.5 : 1.5);
+    var fColor = term.ec;
+    /* use hex edge color with alpha */
+    var r=parseInt(fColor.slice(1,3),16), g=parseInt(fColor.slice(3,5),16), b=parseInt(fColor.slice(5,7),16);
+    var fc = "rgba("+r+","+g+","+b+","+(0.20*h)+")";
+    var ec = h < 0.4
+      ? "rgba("+r+","+g+","+b+",0.22)"
+      : term.ec;
+
+    face3([O,Ax,AxBy,By],    fc,sc,ox,oy);
+    face3([Cz,AxCz,Top,ByCz],fc,sc,ox,oy);
+    face3([O,Ax,AxCz,Cz],    fc,sc,ox,oy);
+    face3([By,AxBy,Top,ByCz], fc,sc,ox,oy);
+    face3([O,By,ByCz,Cz],    fc,sc,ox,oy);
+    face3([Ax,AxBy,Top,AxCz], fc,sc,ox,oy);
+
+    var eds=[[O,Ax],[O,By],[O,Cz],[Ax,AxBy],[Ax,AxCz],[By,AxBy],[By,ByCz],[Cz,AxCz],[Cz,ByCz],[AxBy,Top],[AxCz,Top],[ByCz,Top]];
+    ctx.beginPath();ctx.strokeStyle=ec;ctx.lineWidth= h > 0.5 ? 1.8 : 0.7;
+    eds.forEach(function(e){line3(e[0],e[1],sc,ox,oy);});ctx.stroke();
+
+    if(h > 0.5){
+      var pT=scr(Top,sc,ox,oy);
+      ctx.fillStyle=ec;ctx.beginPath();ctx.arc(pT.x,pT.y,3,0,Math.PI*2);ctx.fill();
+      ctx.font="11px system-ui,sans-serif";
+      ctx.fillText((term.sign>0?"+":"\u2212")+term.lbl+"="+term.val(),pT.x+5,pT.y-4);
+    }
+  }
+
+  /* draw a big annotation for the selected term in the right panel */
+  function drawTermAnnotation(sc,ox,oy,term,panelX,panelW,panelH){
+    var tp=term.top(),x=tp[0],y=tp[1],z=tp[2];
+    var Top=[x,y,z];
+    var pT=scr(Top,sc,ox,oy);
+    var v=term.val();
+    var sign=term.sign>0?"+":"\u2212";
+
+    /* big label near top corner */
+    ctx.save();
+    ctx.font="bold 16px system-ui,sans-serif";
+    ctx.fillStyle=term.ec;
+    ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    var lx=pT.x+10, ly=pT.y-10;
+    if(lx+180>panelX+panelW) lx=pT.x-185;
+    ctx.fillText(sign+term.lbl+" = "+v,lx,ly);
+    ctx.font="12px system-ui,sans-serif";ctx.fillStyle="#8899bb";
+    ctx.fillText("("+x+"\u00d7"+y+"\u00d7"+z+")",lx,ly+17);
+    ctx.restore();
+
+    /* draw projections on axes — dashed lines from top corner to axes */
+    ctx.save();
+    ctx.setLineDash([3,4]);ctx.lineWidth=1;ctx.strokeStyle="rgba("+
+      parseInt(term.ec.slice(1,3),16)+","+
+      parseInt(term.ec.slice(3,5),16)+","+
+      parseInt(term.ec.slice(5,7),16)+",0.55)";
+    ctx.beginPath();
+    line3([x,0,0],[x,y,0],sc,ox,oy);
+    line3([0,y,0],[x,y,0],sc,ox,oy);
+    line3([x,y,0],[x,y,z],sc,ox,oy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+
+    /* tick marks on axes */
+    var lw=2.5;
+    ctx.lineWidth=lw;
+    ctx.strokeStyle="#e74c3c";ctx.fillStyle="#e74c3c";
+    var pAx=scr([x,0,0],sc,ox,oy);
+    ctx.beginPath();ctx.arc(pAx.x,pAx.y,4,0,Math.PI*2);ctx.fill();
+    ctx.font="bold 12px system-ui,sans-serif";
+    ctx.fillText(x.toFixed(0),pAx.x+5,pAx.y-5);
+
+    ctx.strokeStyle="#2ecc71";ctx.fillStyle="#2ecc71";
+    var pAy=scr([0,y,0],sc,ox,oy);
+    ctx.beginPath();ctx.arc(pAy.x,pAy.y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillText(y.toFixed(0),pAy.x+5,pAy.y-5);
+
+    ctx.strokeStyle="#3498db";ctx.fillStyle="#3498db";
+    var pAz=scr([0,0,z],sc,ox,oy);
+    ctx.beginPath();ctx.arc(pAz.x,pAz.y,4,0,Math.PI*2);ctx.fill();
+    ctx.fillText(z.toFixed(0),pAz.x+5,pAz.y-5);
+  }
+
+  /* ── Sarrus diagram ── */
+  function drawSarrus(px,py,pw,ph){
+    var MAT=[
+      [A[0],A[1],A[2],A[0],A[1]],
+      [B[0],B[1],B[2],B[0],B[1]],
+      [C[0],C[1],C[2],C[0],C[1]]
+    ];
+    var RLBL=["a","b","c"];
+    var RCLR=["#4fc3f7","#ef9a9a","#a5d6a7"];
+
+    var cw=Math.min(pw/8.8, ph/5.8);
+    var ch=cw;
+    var mw=5*cw, mh=3*ch;
+    var mlx=px+(pw-mw)*0.5;
+    var mty=py+(ph-mh)*0.50;
+
+    ctx.font="bold 12px system-ui,sans-serif";
+    ctx.fillStyle="#a5c8ff";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillText("Правило Саррюса — откуда знаки",px+pw/2,py+6);
+    ctx.font="11px system-ui,sans-serif";ctx.fillStyle="#888";
+    ctx.fillText("клик на диагональ \u2192 изолировать в 3D",px+pw/2,py+22);
+
+    ctx.fillStyle="rgba(22,26,38,0.85)";
+    ctx.fillRect(mlx-cw*0.9, mty-ch*0.4, mw+cw*1.8, mh+ch*0.8);
+    ctx.fillStyle="rgba(10,12,20,0.5)";
+    ctx.fillRect(mlx+3*cw, mty, 2*cw, mh);
+
+    ctx.setLineDash([3,3]);ctx.strokeStyle="rgba(80,90,130,0.6)";ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(mlx+3*cw, mty-ch*0.3);ctx.lineTo(mlx+3*cw, mty+mh+ch*0.2);
+    ctx.stroke();ctx.setLineDash([]);
+
+    ctx.strokeStyle="rgba(60,70,100,0.5)";ctx.lineWidth=0.7;
+    for(var r=0;r<3;r++) for(var c=0;c<5;c++)
+      ctx.strokeRect(mlx+c*cw, mty+r*ch, cw, ch);
+
+    ctx.textAlign="right";ctx.textBaseline="middle";
+    ctx.font="bold "+Math.round(cw*0.38)+"px system-ui,sans-serif";
+    for(var r=0;r<3;r++){ctx.fillStyle=RCLR[r];ctx.fillText(RLBL[r],mlx-6,mty+r*ch+ch/2);}
+
+    ctx.textAlign="center";ctx.textBaseline="bottom";
+    ctx.font=Math.round(cw*0.30)+"px system-ui,sans-serif";ctx.fillStyle="#556";
+    ["x","y","z","x","y"].forEach(function(n,c){ctx.fillText(n,mlx+c*cw+cw/2,mty-3);});
+    ctx.fillStyle="#334";ctx.font="10px system-ui,sans-serif";
+    ctx.fillText("(повтор)",mlx+3.5*cw,mty+mh+ch*0.6);
+
+    var PDIAG=[[[0,0],[1,1],[2,2]],[[0,1],[1,2],[2,3]],[[0,2],[1,3],[2,4]]];
+    var PCLR=["#f1c40f","#ff9800","#ffd54f"];
+    var PLBL=["+ax\u00b7by\u00b7cz","+ay\u00b7bz\u00b7cx","+az\u00b7bx\u00b7cy"];
+    var NDIAG=[[[0,2],[1,1],[2,0]],[[0,3],[1,2],[2,1]],[[0,4],[1,3],[2,2]]];
+    var NCLR=["#42a5f5","#ab47bc","#26a69a"];
+    var NLBL=["\u2212az\u00b7by\u00b7cx","\u2212ax\u00b7bz\u00b7cy","\u2212ay\u00b7bx\u00b7cz"];
+
+    sarrusDiagBounds = [];
+
+    function drawDiag(diag, clr, lbl, termIdx, labelSide){
+      var isActive = (activeTerm === termIdx);
+      var isAny    = (activeTerm === -1);
+      var alpha    = (isAny || isActive) ? 1.0 : 0.22;
+
+      diag.forEach(function(rc){
+        ctx.globalAlpha = isActive ? 0.35 : (isAny ? 0.22 : 0.06);
+        ctx.fillStyle=clr;
+        ctx.fillRect(mlx+rc[1]*cw+1,mty+rc[0]*ch+1,cw-2,ch-2);
+        ctx.globalAlpha=1;
+      });
+
+      var pts=diag.map(function(rc){return{x:mlx+rc[1]*cw+cw/2,y:mty+rc[0]*ch+ch/2};});
+      ctx.beginPath();ctx.strokeStyle=clr;ctx.lineWidth= isActive ? 3 : (isAny ? 2.2 : 0.8);
+      ctx.globalAlpha=alpha;
+      ctx.moveTo(pts[0].x,pts[0].y);pts.forEach(function(p){ctx.lineTo(p.x,p.y);});ctx.stroke();
+      ctx.globalAlpha=1;
+
+      /* arrowhead */
+      var dx=pts[2].x-pts[1].x,dy=pts[2].y-pts[1].y,len=Math.hypot(dx,dy);
+      if(len>1&&alpha>0.1){
+        var ux=dx/len,uy=dy/len,hs=6;
+        ctx.globalAlpha=alpha;
+        ctx.fillStyle=clr;ctx.beginPath();ctx.moveTo(pts[2].x,pts[2].y);
+        ctx.lineTo(pts[2].x-ux*hs-uy*hs*0.4,pts[2].y-uy*hs+ux*hs*0.4);
+        ctx.lineTo(pts[2].x-ux*hs+uy*hs*0.4,pts[2].y-uy*hs-ux*hs*0.4);
+        ctx.closePath();ctx.fill();
+        ctx.globalAlpha=1;
+      }
+
+      /* label */
+      var tval = TERMS[termIdx].val();
+      ctx.font=(isActive?"bold ":"")+Math.round(cw*0.30)+"px system-ui,sans-serif";
+      ctx.fillStyle=clr;ctx.textBaseline="middle";ctx.globalAlpha=alpha;
+      if(labelSide==="right"){
+        ctx.textAlign="left";
+        ctx.fillText(lbl+"="+tval, mlx+5*cw+6, pts[2].y);
+      } else {
+        ctx.textAlign="right";
+        ctx.fillText(lbl+"="+tval, mlx-6, pts[2].y);
+      }
+      ctx.globalAlpha=1;
+
+      /* compute hit zone: bounding box of all cell centers */
+      var xs=pts.map(function(p){return p.x;});
+      var ys=pts.map(function(p){return p.y;});
+      var cx=(Math.min.apply(null,xs)+Math.max.apply(null,xs))/2;
+      var cy=(Math.min.apply(null,ys)+Math.max.apply(null,ys))/2;
+      sarrusDiagBounds.push({cx:cx,cy:cy,r:cw*1.4});
+    }
+
+    PDIAG.forEach(function(diag,di){ drawDiag(diag,PCLR[di],PLBL[di],di,"right"); });
+    NDIAG.forEach(function(diag,di){ drawDiag(diag,NCLR[di],NLBL[di],di+3,"left"); });
+
+    /* cell values on top */
+    ctx.font="bold "+Math.round(cw*0.40)+"px system-ui,sans-serif";
+    ctx.textAlign="center";ctx.textBaseline="middle";
+    for(var r=0;r<3;r++) for(var c=0;c<5;c++){
+      ctx.fillStyle="#ccd";
+      ctx.fillText(MAT[r][c],mlx+c*cw+cw/2,mty+r*ch+ch/2);
+    }
+
+    /* formula */
+    var d=A[0]*(B[1]*C[2]-B[2]*C[1])-A[1]*(B[0]*C[2]-B[2]*C[0])+A[2]*(B[0]*C[1]-B[1]*C[0]);
+    var ps=TERMS[0].val()+TERMS[1].val()+TERMS[2].val();
+    var ns=TERMS[3].val()+TERMS[4].val()+TERMS[5].val();
+    var fy=mty+mh+ch*1.0;
+    ctx.font="12px system-ui,sans-serif";ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillStyle="#9ba3c0";
+    ctx.fillText("det = ("+TERMS[0].val()+"+"+TERMS[1].val()+"+"+TERMS[2].val()+") \u2212 ("+TERMS[3].val()+"+"+TERMS[4].val()+"+"+TERMS[5].val()+") = "+ps+" \u2212 "+ns+" = "+d,px+pw/2,fy);
+
+    ctx.textAlign="left";ctx.textBaseline="alphabetic";
+  }
+
+  function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+  window.addEventListener("resize",resize); resize();
+
+  function tick(){
+    var W=canvas.width, H=canvas.height;
+    var dW=W-SBW;
+    var dH=H;
+    var leftW=Math.floor(dW*0.40);
+    var rightW=dW-leftW;
+    var sarH=Math.floor(dH*0.40);
+    var view3H=dH-sarH;
+
+    var scL=Math.min(leftW, dH)*gScale/14;
+    var scR=Math.min(rightW, view3H)*gScale/14;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle="#1a1d23";ctx.fillRect(0,0,W,H);
+
+    /* ── LEFT: clean parallelepiped ── */
+    ctx.save();
+    ctx.beginPath();ctx.rect(0,0,leftW,dH);ctx.clip();
+    drawGrid(scL,leftW/2,dH/2);
+    drawAxes(scL,leftW/2,dH/2);
+    drawParallelepiped(scL,leftW/2,dH/2,1.0);
+    ctx.font="bold 13px system-ui,sans-serif";ctx.fillStyle="#a5c8ff";
+    ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillText("Параллелепипед",leftW/2,8);
+    ctx.fillStyle="#667";ctx.font="11px system-ui,sans-serif";
+    ctx.fillText("объём = |det(a,b,c)|",leftW/2,26);
+    ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    ctx.restore();
+
+    /* ── RIGHT TOP: overlaid boxes ── */
+    ctx.save();
+    ctx.beginPath();ctx.rect(leftW,0,rightW,view3H);ctx.clip();
+    var oxR=leftW+rightW/2, oyR=view3H/2;
+    drawGrid(scR,oxR,oyR);
+    drawAxes(scR,oxR,oyR);
+
+    if(activeTerm === -1){
+      /* show all: parallelepiped dim, all boxes medium */
+      drawParallelepiped(scR,oxR,oyR,0.22);
+      TERMS.forEach(function(t){drawTermBox(scR,oxR,oyR,t,1.0);});
+      ctx.font="bold 13px system-ui,sans-serif";ctx.fillStyle="#a5c8ff";
+      ctx.textAlign="center";ctx.textBaseline="top";
+      ctx.fillText("6 слагаемых наложены на параллелепипед",leftW+rightW/2,8);
+      ctx.fillStyle="#f1c40f";ctx.font="12px system-ui,sans-serif";
+      ctx.fillText("жёлтые \u2014 складываем (+)   синие \u2014 вычитаем (\u2212)",leftW+rightW/2,26);
+    } else {
+      /* isolate selected term */
+      var t=TERMS[activeTerm];
+      drawParallelepiped(scR,oxR,oyR,0.30);
+      /* draw dimmed inactive boxes first */
+      TERMS.forEach(function(tt,ii){
+        if(ii!==activeTerm) drawTermBox(scR,oxR,oyR,tt,0.18);
+      });
+      /* draw active box bright on top */
+      drawTermBox(scR,oxR,oyR,t,1.0);
+      drawTermAnnotation(scR,oxR,oyR,t,leftW,rightW,view3H);
+
+      ctx.font="bold 14px system-ui,sans-serif";
+      ctx.fillStyle=t.ec;ctx.textAlign="center";ctx.textBaseline="top";
+      var sign=t.sign>0?"+":"\u2212";
+      ctx.fillText(sign+t.lbl+" = "+t.val()+"   ("+
+        (t.sign>0?"складываем":"вычитаем")+")",leftW+rightW/2,8);
+      ctx.font="11px system-ui,sans-serif";ctx.fillStyle="#8899bb";
+      ctx.fillText(TERM_XPLAIN[activeTerm]+"  \u2502  по одной компоненте от каждого вектора",leftW+rightW/2,26);
+    }
+    ctx.textAlign="left";ctx.textBaseline="alphabetic";
+    ctx.restore();
+
+    /* ── RIGHT BOTTOM: Sarrus ── */
+    ctx.save();
+    ctx.beginPath();ctx.rect(leftW,view3H,rightW,sarH);ctx.clip();
+    ctx.fillStyle="rgba(15,17,24,0.7)";ctx.fillRect(leftW,view3H,rightW,sarH);
+    ctx.strokeStyle="rgba(80,90,130,0.5)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(leftW,view3H);ctx.lineTo(leftW+rightW,view3H);ctx.stroke();
+    drawSarrus(leftW,view3H,rightW,sarH);
+    ctx.restore();
+
+    /* dividers */
+    ctx.strokeStyle="rgba(100,110,150,0.25)";ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(leftW,0);ctx.lineTo(leftW,dH);ctx.stroke();
+
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
