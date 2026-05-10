@@ -1385,7 +1385,7 @@ function rebuild() {
 
   if (showMode === 'figures') {
     const ax=A[0], ay=A[1], az=A[2], bx=B[0], by=B[1], bz=B[2], cx=C[0], cy=C[1], cz=C[2];
-    if (tog('show-axbycz')) drawBox([W-ax,       H-by, 0], [W,       H, cz], 0xc8c060, 0.5);
+    if (tog('show-axbycz')) drawBox([W-ax,       0,    0],    [W,       by, cz], 0xc8c060, 0.5);
     if (tog('show-bxcyaz')) drawBox([W-ax-bx,    H-cy, 0], [W-ax,    H, az], 0xc8a020, 0.5);
     if (tog('show-cxaybz')) drawBox([W-ax-bx-cx, H-ay, 0], [W-ax-bx, H, bz], 0xb09020, 0.5);
     if (tog('show-bxaycz')) drawBox([W-bx,         H-ay, 0], [W,       H, cz], 0xc05050, 0.5);

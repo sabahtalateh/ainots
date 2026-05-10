@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>vol = cx·S(yz) + cy·S(xz) + cz·S(xy)</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#1a1d23;color:#ddd;font-family:system-ui,sans-serif;}
+  canvas{display:block;position:absolute;top:0;left:0;}
+  #ctrl{
+    position:absolute;top:0;right:0;bottom:0;width:300px;
+    background:rgba(12,14,20,0.97);border-left:1px solid #252840;
+    padding:14px;font-size:13px;user-select:none;
+    display:flex;flex-direction:column;gap:10px;overflow-y:auto;box-sizing:border-box;
+  }
+  #step-info{font-size:13px;color:#f1c40f;font-weight:bold;text-align:center;letter-spacing:0.05em;}
+  #step-desc{font-size:12px;color:#99a;line-height:1.7;border:1px solid #252840;padding:8px 10px;border-radius:4px;background:rgba(255,255,255,0.025);min-height:52px;}
+  h3{margin:0 0 2px;font-size:12px;color:#a5c8ff;letter-spacing:0.04em;}
+  table{border-collapse:collapse;width:100%;}
+  td{padding:2px;vertical-align:middle;font-size:14px;}
+  .va{color:#4fc3f7;font-weight:bold;} .vb{color:#ef9a9a;font-weight:bold;} .vc{color:#a5d6a7;font-weight:bold;}
+  .btn{background:#22263a;border:1px solid #3a4060;color:#ccc;border-radius:4px;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;text-align:center;}
+  .btn:hover{background:#3a4060;}
+  #det-val{font-size:14px;color:#aaa;text-align:center;padding-top:6px;border-top:1px solid #252840;}
+  #nav{display:flex;gap:6px;margin-top:auto;padding-top:8px;}
+  #nav button{flex:1;background:#22263a;border:1px solid #3a4060;color:#a5c8ff;border-radius:4px;padding:7px 0;cursor:pointer;font-size:12px;}
+  #nav button:hover{background:#3a4060;}
+  #nav button:disabled{opacity:0.25;cursor:default;}
+  #hint{font-size:11px;color:#445;line-height:1.8;text-align:center;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ctrl">
+  <div id="step-info">Сцена 1 / 6</div>
+  <div id="step-desc">Параллелепипед P(a,&nbsp;b,&nbsp;c).<br>Его объём равен |det(a,&nbsp;b,&nbsp;c)|.</div>
+
+  <h3>ВЕКТОРЫ</h3>
+  <table>
+    <tr>
+      <td><span class="va">a</span></td>
+      <td>(<span id="a0">5</span></td>
+      <td><button class="btn" data-v="A" data-i="0" data-d="-1">−</button><button class="btn" data-v="A" data-i="0" data-d="1">+</button></td>
+      <td><span id="a1">1</span></td>
+      <td><button class="btn" data-v="A" data-i="1" data-d="-1">−</button><button class="btn" data-v="A" data-i="1" data-d="1">+</button></td>
+      <td><span id="a2">1</span>)</td>
+      <td><button class="btn" data-v="A" data-i="2" data-d="-1">−</button><button class="btn" data-v="A" data-i="2" data-d="1">+</button></td>
+    </tr>
+    <tr>
+      <td><span class="vb">b</span></td>
+      <td>(<span id="b0">1</span></td>
+      <td><button class="btn" data-v="B" data-i="0" data-d="-1">−</button><button class="btn" data-v="B" data-i="0" data-d="1">+</button></td>
+      <td><span id="b1">4</span></td>
+      <td><button class="btn" data-v="B" data-i="1" data-d="-1">−</button><button class="btn" data-v="B" data-i="1" data-d="1">+</button></td>
+      <td><span id="b2">1</span>)</td>
+      <td><button class="btn" data-v="B" data-i="2" data-d="-1">−</button><button class="btn" data-v="B" data-i="2" data-d="1">+</button></td>
+    </tr>
+    <tr>
+      <td><span class="vc">c</span></td>
+      <td>(<span id="c0">1</span></td>
+      <td><button class="btn" data-v="C" data-i="0" data-d="-1">−</button><button class="btn" data-v="C" data-i="0" data-d="1">+</button></td>
+      <td><span id="c1">1</span></td>
+      <td><button class="btn" data-v="C" data-i="1" data-d="-1">−</button><button class="btn" data-v="C" data-i="1" data-d="1">+</button></td>
+      <td><span id="c2">3</span>)</td>
+      <td><button class="btn" data-v="C" data-i="2" data-d="-1">−</button><button class="btn" data-v="C" data-i="2" data-d="1">+</button></td>
+    </tr>
+  </table>
+
+  <div id="det-val">det = <b id="detval" style="color:#f1c40f;">?</b></div>
+
+  <div id="nav">
+    <button id="btn-prev" disabled>← Назад</button>
+    <button id="btn-next">Вперёд →</button>
+  </div>
+  <div id="hint">Тяни — вращение · Колёсико — зум</div>
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var DPR = window.devicePixelRatio || 1;
+  var cW = 0, cH = 0;
+  var SBW = 300;
+
+  /* ── vectors ── */
+  var A = [5,1,1], B = [1,4,1], C = [1,1,3];
+  var vecs = { A:A, B:B, C:C };
+  var spanIds = { A:['a0','a1','a2'], B:['b0','b1','b2'], C:['c0','c1','c2'] };
+  var spans = {};
+  Object.keys(spanIds).forEach(function(k){
+    spans[k] = spanIds[k].map(function(id){ return document.getElementById(id); });
+  });
+  function syncSpans(){
+    Object.keys(vecs).forEach(function(k){ vecs[k].forEach(function(v,i){ spans[k][i].textContent=v; }); });
+  }
+  syncSpans();
+
+  document.getElementById('ctrl').addEventListener('click', function(e){
+    var b = e.target.closest('.btn'); if(!b) return;
+    var v=b.dataset.v, i=+b.dataset.i, d=+b.dataset.d;
+    if(!vecs[v]) return;
+    vecs[v][i] += d;
+    syncSpans(); updateDet();
+  });
+
+  function det3(a,b,c){
+    return a[0]*(b[1]*c[2]-b[2]*c[1]) - a[1]*(b[0]*c[2]-b[2]*c[0]) + a[2]*(b[0]*c[1]-b[1]*c[0]);
+  }
+  function updateDet(){ document.getElementById('detval').textContent = det3(A,B,C); }
+  updateDet();
+
+  /* ── camera ── */
+  var CAM_KEY = 'proof_vol_cam';
+  var savedCam = (function(){ try{ var s=localStorage.getItem(CAM_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } })();
+  var cam = savedCam ? {theta:savedCam.theta, phi:savedCam.phi} : {theta:0.55, phi:0.50};
+  var gScale = savedCam ? savedCam.scale : 1.0;
+  function saveCam(){ try{ localStorage.setItem(CAM_KEY, JSON.stringify({theta:cam.theta,phi:cam.phi,scale:gScale})); }catch(e){} }
+
+  var drag = { active:false, x:0, y:0 };
+  window.addEventListener('mousedown', function(e){
+    if(e.target.closest('#ctrl')) return;
+    drag.active=true; drag.x=e.clientX; drag.y=e.clientY;
+  });
+  window.addEventListener('mouseup', function(){ drag.active=false; saveCam(); });
+  window.addEventListener('mousemove', function(e){
+    if(!drag.active) return;
+    cam.theta -= (e.clientX-drag.x)*0.007;
+    cam.phi   -= (e.clientY-drag.y)*0.007;
+    cam.phi = Math.max(0.05, Math.min(Math.PI/2-0.03, cam.phi));
+    drag.x=e.clientX; drag.y=e.clientY;
+  });
+  window.addEventListener('wheel', function(e){
+    gScale = Math.max(0.2, Math.min(5.0, gScale - e.deltaY*0.001));
+    saveCam();
+  }, {passive:true});
+
+  /* ── 3D projection ── */
+  function project(p){
+    var ct=Math.cos(cam.theta), st=Math.sin(cam.theta);
+    var cp=Math.cos(cam.phi),   sp=Math.sin(cam.phi);
+    var rx = -(ct*p[0]+st*p[1]);
+    var ry = -st*p[0]+ct*p[1];
+    return [rx, -sp*ry+cp*p[2]];
+  }
+  function scr(p3, sc, ox, oy){
+    var p=project(p3); return {x:ox+p[0]*sc, y:oy-p[1]*sc};
+  }
+  function depth(p3){
+    var ct=Math.cos(cam.theta), st=Math.sin(cam.theta);
+    var cp=Math.cos(cam.phi),   sp=Math.sin(cam.phi);
+    return cp*(-st*p3[0]+ct*p3[1]) + sp*p3[2];
+  }
+
+  /* ── draw primitives ── */
+  function line3(a,b,sc,ox,oy){
+    var pa=scr(a,sc,ox,oy), pb=scr(b,sc,ox,oy);
+    ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y);
+  }
+  function face3fill(pts,col,sc,ox,oy){
+    var ps=pts.map(function(p){ return scr(p,sc,ox,oy); });
+    ctx.beginPath(); ctx.moveTo(ps[0].x,ps[0].y);
+    for(var i=1;i<ps.length;i++) ctx.lineTo(ps[i].x,ps[i].y);
+    ctx.closePath(); ctx.fillStyle=col; ctx.fill();
+  }
+  function face3stroke(pts,col,lw,sc,ox,oy){
+    var ps=pts.map(function(p){ return scr(p,sc,ox,oy); });
+    ctx.beginPath(); ctx.moveTo(ps[0].x,ps[0].y);
+    for(var i=1;i<ps.length;i++) ctx.lineTo(ps[i].x,ps[i].y);
+    ctx.closePath(); ctx.strokeStyle=col; ctx.lineWidth=lw; ctx.stroke();
+  }
+  function arrow3(from,to,sc,ox,oy){
+    var a=scr(from,sc,ox,oy), b=scr(to,sc,ox,oy);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    var dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy); if(len<2) return;
+    var ux=dx/len, uy=dy/len, hs=10;
+    ctx.beginPath(); ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-ux*hs-uy*hs*0.4, b.y-uy*hs+ux*hs*0.4);
+    ctx.lineTo(b.x-ux*hs+uy*hs*0.4, b.y-uy*hs-ux*hs*0.4);
+    ctx.closePath(); ctx.fill();
+  }
+
+  /* ── math helpers ── */
+  function vsum(u,v){ return [u[0]+v[0],u[1]+v[1],u[2]+v[2]]; }
+  function vscale(u,s){ return [u[0]*s,u[1]*s,u[2]*s]; }
+  function vlerp(u,v,t){ return [u[0]+(v[0]-u[0])*t, u[1]+(v[1]-u[1])*t, u[2]+(v[2]-u[2])*t]; }
+
+  /* ── draw parallelepiped ── */
+  /* drawPara(org, v1, v2, v3, [r,g,b], fillAlpha, strokeAlpha, sc, ox, oy) */
+  function drawPara(org, v1, v2, v3, rgb, fillAlpha, strokeAlpha, sc, ox, oy){
+    var v = [
+      org,
+      vsum(org,v1),
+      vsum(org,v2),
+      vsum(org,v3),
+      vsum(vsum(org,v1),v2),
+      vsum(vsum(org,v1),v3),
+      vsum(vsum(org,v2),v3),
+      vsum(vsum(vsum(org,v1),v2),v3)
+    ];
+    var fi = [[0,1,4,2],[3,5,7,6],[0,1,5,3],[2,4,7,6],[0,2,6,3],[1,4,7,5]];
+    fi.sort(function(a,b){
+      var da=(depth(v[a[0]])+depth(v[a[1]])+depth(v[a[2]])+depth(v[a[3]]))/4;
+      var db=(depth(v[b[0]])+depth(v[b[1]])+depth(v[b[2]])+depth(v[b[3]]))/4;
+      return da-db;
+    });
+    var fill   = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+fillAlpha+')';
+    var stroke = 'rgba('+rgb[0]+','+rgb[1]+','+rgb[2]+','+strokeAlpha+')';
+    fi.forEach(function(f){
+      var pts=f.map(function(i){ return v[i]; });
+      face3fill(pts, fill, sc, ox, oy);
+      face3stroke(pts, stroke, 1.2, sc, ox, oy);
+    });
+  }
+
+  /* ── draw grid & axes ── */
+  function drawGrid(sc,ox,oy){
+    var G=6;
+    ctx.beginPath(); ctx.strokeStyle='rgba(120,130,160,0.10)'; ctx.lineWidth=0.7;
+    for(var i=-G;i<=G;i++){
+      line3([i,-G,0],[i,G,0],sc,ox,oy);
+      line3([-G,i,0],[G,i,0],sc,ox,oy);
+    }
+    ctx.stroke();
+  }
+  function drawAxes(sc,ox,oy){
+    var L=5;
+    ctx.lineWidth=1.4; ctx.font='bold 12px system-ui';
+    [['#3498db',[L,0,0],'x'],['#e74c3c',[0,L,0],'y'],['#2ecc71',[0,0,L],'z']].forEach(function(ax){
+      ctx.strokeStyle=ax[0]; ctx.fillStyle=ax[0];
+      arrow3([0,0,0],ax[1],sc,ox,oy);
+      var p=scr([ax[1][0]*1.18,ax[1][1]*1.18,ax[1][2]*1.18],sc,ox,oy);
+      ctx.fillText(ax[2],p.x,p.y+4);
+    });
+  }
+
+  /* ── scene 0: single parallelepiped ── */
+  function drawScene0(sc,ox,oy){
+    var O=[0,0,0];
+    /* body */
+    drawPara(O, A, B, C, [200,210,235], 0.07, 0.45, sc, ox, oy);
+    /* vector arrows */
+    ctx.lineWidth=2.8;
+    ctx.strokeStyle='#4fc3f7'; ctx.fillStyle='#4fc3f7'; arrow3(O,A,sc,ox,oy);
+    ctx.strokeStyle='#ef9a9a'; ctx.fillStyle='#ef9a9a'; arrow3(O,B,sc,ox,oy);
+    ctx.strokeStyle='#a5d6a7'; ctx.fillStyle='#a5d6a7'; arrow3(O,C,sc,ox,oy);
+    /* labels */
+    ctx.font='bold 15px system-ui';
+    var la=scr([A[0]/2,A[1]/2,A[2]/2],sc,ox,oy);
+    ctx.fillStyle='#4fc3f7'; ctx.fillText('a', la.x-14, la.y-4);
+    var lb=scr([B[0]/2,B[1]/2,B[2]/2],sc,ox,oy);
+    ctx.fillStyle='#ef9a9a'; ctx.fillText('b', lb.x-14, lb.y+6);
+    var lc=scr([C[0]/2,C[1]/2,C[2]/2],sc,ox,oy);
+    ctx.fillStyle='#a5d6a7'; ctx.fillText('c', lc.x+6,  lc.y);
+    /* origin dot */
+    var pO=scr(O,sc,ox,oy);
+    ctx.beginPath(); ctx.fillStyle='#f1c40f'; ctx.arc(pO.x,pO.y,4,0,Math.PI*2); ctx.fill();
+    ctx.font='bold 12px system-ui'; ctx.fillStyle='#f1c40f';
+    ctx.fillText('O', pO.x+8, pO.y-5);
+    /* vol label at center */
+    var d=det3(A,B,C);
+    var mid=vscale(vsum(vsum(A,B),C),1/2);
+    var pm=scr(mid,sc,ox,oy);
+    ctx.font='13px system-ui'; ctx.fillStyle='rgba(241,196,15,0.75)';
+    ctx.textAlign='center';
+    ctx.fillText('vol = '+d, pm.x, pm.y);
+    ctx.textAlign='left';
+  }
+
+  /* ── scene 1: три Кавальери-призмы ── */
+  function prismSep(){
+    return Math.max(A[0]+B[0], A[1]+B[1], A[2]+B[2], C[0], C[1], C[2]) * 1.3 + 2;
+  }
+  function buildPrisms(){
+    var ax=A[0],ay=A[1],az=A[2], bx=B[0],by=B[1],bz=B[2], cx=C[0],cy=C[1],cz=C[2];
+    var sep = prismSep();
+    return [
+      { org:[-sep,0,0], v1:[0,ay,az],  v2:[0,by,bz],  v3:[cx,0,0],  rgb:[220,80,60],
+        svol: cx*(ay*bz-az*by),  lbl:'cₓ\xb7S(yz)' },
+      { org:[0,0,0],    v1:[ax,0,az],  v2:[bx,0,bz],  v3:[0,cy,0],  rgb:[50,180,100],
+        svol: cy*(az*bx-ax*bz),  lbl:'−cᵧ\xb7S(xz)' },
+      { org:[sep,0,0],  v1:[ax,ay,0],  v2:[bx,by,0],  v3:[0,0,cz],  rgb:[52,130,220],
+        svol: cz*(ax*by-ay*bx),  lbl:'cᵩ\xb7S(xy)' }
+    ];
+  }
+
+  function drawScene1(sc,ox,oy){
+    var prisms = buildPrisms();
+    /* ghost of original parallelepiped at origin */
+    drawPara([0,0,0], A, B, C, [200,210,235], 0.03, 0.15, sc, ox, oy);
+
+    prisms.forEach(function(p){
+      var c = p.rgb, cs = 'rgba('+c[0]+','+c[1]+','+c[2]+',';
+      /* body */
+      drawPara(p.org, p.v1, p.v2, p.v3, c, 0.10, 0.50, sc, ox, oy);
+      /* highlighted base (projection parallelogram) */
+      var O2=p.org, pA=vsum(O2,p.v1), pB=vsum(O2,p.v2), pAB=vsum(pA,p.v2);
+      face3fill([O2,pA,pAB,pB],   cs+'0.28)', sc, ox, oy);
+      face3stroke([O2,pA,pAB,pB], cs+'0.9)',  2.0, sc, ox, oy);
+      /* height arrow */
+      ctx.lineWidth=2.5; ctx.strokeStyle=cs+'0.9)'; ctx.fillStyle=cs+'0.9)';
+      arrow3(O2, vsum(O2,p.v3), sc, ox, oy);
+      /* vol label at prism centre */
+      var ctr = vsum(O2, vsum(vscale(vsum(p.v1,p.v2),0.5), vscale(p.v3,0.5)));
+      var pc  = scr(ctr, sc, ox, oy);
+      ctx.save();
+      ctx.font='12px system-ui'; ctx.textAlign='center';
+      ctx.fillStyle=cs+'1)';
+      ctx.fillText(p.lbl+' = '+p.svol, pc.x, pc.y-6);
+      ctx.restore();
+    });
+
+    /* sum = det label (screen-space, top-centre) */
+    var d = det3(A,B,C);
+    var v1=prisms[0].svol, v2=prisms[1].svol, v3=prisms[2].svol;
+    ctx.save();
+    ctx.font='bold 13px system-ui'; ctx.textAlign='center';
+    ctx.fillStyle='rgba(241,196,15,0.9)';
+    ctx.fillText(v1+' + ('+v2+') + '+v3+' = det = '+d, (cW-SBW)/2, 34);
+    ctx.restore();
+  }
+
+  /* ── animation helpers ── */
+  var animT = 1.0, animStart = 0;
+  var ANIM_DUR = 1800;
+  function ease(t){ return t*t*(3-2*t); }
+
+  /* ── scene 2: обратный сдвиг (призмы → слябы, разнесены) ── */
+  function drawScene2(sc,ox,oy,t){
+    var ax=A[0],ay=A[1],az=A[2], bx=B[0],by=B[1],bz=B[2], cx=C[0],cy=C[1],cz=C[2];
+    var sep=prismSep();
+    var defs=[
+      {org:[-sep,0,0], v1s:[0,ay,az],  v2s:[0,by,bz],  v3:[cx,0,0],  rgb:[220,80,60]},
+      {org:[0,0,0],    v1s:[ax,0,az],  v2s:[bx,0,bz],  v3:[0,cy,0],  rgb:[50,180,100]},
+      {org:[sep,0,0],  v1s:[ax,ay,0],  v2s:[bx,by,0],  v3:[0,0,cz],  rgb:[52,130,220]}
+    ];
+    defs.forEach(function(d){
+      var v1=vlerp(d.v1s,A,t), v2=vlerp(d.v2s,B,t);
+      var cs='rgba('+d.rgb[0]+','+d.rgb[1]+','+d.rgb[2]+',';
+      drawPara(d.org,v1,v2,d.v3, d.rgb,0.10,0.55, sc,ox,oy);
+      /* highlighted current base */
+      var O2=d.org, pA=vsum(O2,v1), pB=vsum(O2,v2), pAB=vsum(pA,v2);
+      face3fill([O2,pA,pAB,pB],   cs+'0.22)',sc,ox,oy);
+      face3stroke([O2,pA,pAB,pB], cs+'0.75)',1.5,sc,ox,oy);
+    });
+    ctx.save(); ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+    ctx.fillStyle='rgba(180,190,220,0.7)';
+    ctx.fillText('Сдвиг не меняет объём — принцип Кавальери', (cW-SBW)/2, 34);
+    ctx.restore();
+  }
+
+  /* ── scene 3: слябы сходятся к O, экструзии складываются в c ── */
+  function drawScene3(sc,ox,oy,t){
+    var cx=C[0],cy=C[1],cz=C[2];
+    var sep=prismSep();
+    /* три происхождения: красный и синий едут к O, зелёный уже там */
+    var orgs=[
+      vlerp([-sep,0,0],[0,0,0],t),
+      [0,0,0],
+      vlerp([sep,0,0],[0,0,0],t)
+    ];
+    var slabs=[
+      {v3:[cx,0,0], rgb:[220,80,60],  svol:cx*(A[1]*B[2]-A[2]*B[1]), lbl:'cₓ·S(yz)'},
+      {v3:[0,cy,0], rgb:[50,180,100], svol:cy*(A[2]*B[0]-A[0]*B[2]), lbl:'cᵧ·S(xz)'},
+      {v3:[0,0,cz], rgb:[52,130,220], svol:cz*(A[0]*B[1]-A[1]*B[0]), lbl:'cᵤ·S(xy)'}
+    ];
+    slabs.forEach(function(s,i){
+      var org=orgs[i];
+      var cs='rgba('+s.rgb[0]+','+s.rgb[1]+','+s.rgb[2]+',';
+      drawPara(org,A,B,s.v3,s.rgb,0.09,0.50,sc,ox,oy);
+      /* выделяем общее основание P(a,b) */
+      var O2=org,pA=vsum(O2,A),pB=vsum(O2,B),pAB=vsum(pA,B);
+      face3fill([O2,pA,pAB,pB],cs+'0.22)',sc,ox,oy);
+      face3stroke([O2,pA,pAB,pB],cs+'0.75)',1.8,sc,ox,oy);
+      /* подпись объёма у центра сляба */
+      var ctr=vsum(org,vsum(vscale(vsum(A,B),0.5),vscale(s.v3,0.5)));
+      var pc=scr(ctr,sc,ox,oy);
+      ctx.save(); ctx.font='11px system-ui'; ctx.textAlign='center';
+      ctx.fillStyle=cs+'1)'; ctx.globalAlpha=0.9;
+      ctx.fillText(s.lbl+'='+s.svol,pc.x,pc.y-5);
+      ctx.globalAlpha=1; ctx.restore();
+    });
+    /* когда слябы сошлись — показываем экструзии цепочкой */
+    var et=Math.max(0,(t-0.68)*3.1);
+    if(et>0){
+      ctx.globalAlpha=Math.min(1,et);
+      var O=[0,0,0],e1=[cx,0,0],e2=[cx,cy,0],e3=[cx,cy,cz];
+      ctx.lineWidth=3.5;
+      ctx.strokeStyle='rgba(220,80,60,0.95)';  ctx.fillStyle='rgba(220,80,60,0.95)';  arrow3(O,e1,sc,ox,oy);
+      ctx.strokeStyle='rgba(50,180,100,0.95)'; ctx.fillStyle='rgba(50,180,100,0.95)'; arrow3(e1,e2,sc,ox,oy);
+      ctx.strokeStyle='rgba(52,130,220,0.95)'; ctx.fillStyle='rgba(52,130,220,0.95)'; arrow3(e2,e3,sc,ox,oy);
+      /* c = сумма (светлый) */
+      ctx.lineWidth=2; ctx.strokeStyle='rgba(200,210,235,0.75)'; ctx.fillStyle='rgba(200,210,235,0.75)';
+      arrow3(O,C,sc,ox,oy);
+      /* метка у конца цепочки */
+      var lp=scr(vsum(e3,[0.3,0.3,0]),sc,ox,oy);
+      ctx.font='bold 11px system-ui'; ctx.textAlign='left';
+      ctx.fillStyle='rgba(200,210,235,0.95)';
+      ctx.fillText('c',lp.x,lp.y);
+      ctx.globalAlpha=1;
+    }
+    ctx.save(); ctx.font='bold 12px system-ui'; ctx.textAlign='center';
+    ctx.fillStyle='rgba(180,190,220,0.8)';
+    ctx.fillText('Одно основание P(a,b). Экструзии cₓêₓ+cᵧêᵧ+cᵤêᵤ = c  →  объёмы складываются = vol P',
+                 (cW-SBW)/2, 34);
+    ctx.restore();
+  }
+
+  /* ── scene 4: Кавальери-сдвиг: слябы → призмы, разлёт, объёмы ── */
+  function drawScene4(sc,ox,oy,t){
+    var ax=A[0],ay=A[1],az=A[2], bx=B[0],by=B[1],bz=B[2], cx=C[0],cy=C[1],cz=C[2];
+    var sep=prismSep();
+    var defs=[
+      {tOrg:[-sep,0,0], v1s:[0,ay,az], v2s:[0,by,bz], v3:[cx,0,0], rgb:[220,80,60],
+       svol:cx*(ay*bz-az*by), lbl:'cₓ·S(yz)'},
+      {tOrg:[0,0,0],    v1s:[ax,0,az], v2s:[bx,0,bz], v3:[0,cy,0], rgb:[50,180,100],
+       svol:cy*(az*bx-ax*bz), lbl:'cᵧ·S(xz)'},
+      {tOrg:[sep,0,0],  v1s:[ax,ay,0], v2s:[bx,by,0], v3:[0,0,cz], rgb:[52,130,220],
+       svol:cz*(ax*by-ay*bx), lbl:'cᵤ·S(xy)'}
+    ];
+    defs.forEach(function(d){
+      /* одновременно: разлёт [0,0,0]→tOrg и Кавальери-сдвиг A→v1s, B→v2s */
+      var org=vlerp([0,0,0],d.tOrg,t);
+      var v1 =vlerp(A,d.v1s,t);
+      var v2 =vlerp(B,d.v2s,t);
+      var cs ='rgba('+d.rgb[0]+','+d.rgb[1]+','+d.rgb[2]+',';
+      drawPara(org,v1,v2,d.v3,d.rgb,0.10,0.55,sc,ox,oy);
+      /* текущее основание */
+      var O2=org,pA=vsum(O2,v1),pB=vsum(O2,v2),pAB=vsum(pA,v2);
+      face3fill([O2,pA,pAB,pB],cs+'0.25)',sc,ox,oy);
+      face3stroke([O2,pA,pAB,pB],cs+'0.85)',2,sc,ox,oy);
+      /* стрелка высоты */
+      ctx.lineWidth=2.5; ctx.strokeStyle=cs+'0.9)'; ctx.fillStyle=cs+'0.9)';
+      arrow3(org,vsum(org,d.v3),sc,ox,oy);
+      /* подпись объёма появляется в конце */
+      if(t>0.6){
+        var ctr=vsum(org,vsum(vscale(vsum(v1,v2),0.5),vscale(d.v3,0.5)));
+        var pc=scr(ctr,sc,ox,oy);
+        ctx.save(); ctx.font='12px system-ui'; ctx.textAlign='center';
+        ctx.fillStyle=cs+'1)'; ctx.globalAlpha=Math.min(1,(t-0.6)*2.5);
+        ctx.fillText(d.lbl+'='+d.svol,pc.x,pc.y-6);
+        ctx.globalAlpha=1; ctx.restore();
+      }
+    });
+    if(t>0.82){
+      var d2=det3(A,B,C), a2=Math.min(1,(t-0.82)*5.5);
+      ctx.save(); ctx.font='bold 13px system-ui'; ctx.textAlign='center';
+      ctx.fillStyle='rgba(241,196,15,0.95)'; ctx.globalAlpha=a2;
+      ctx.fillText('Сумма объёмов = det(a,b,c) = '+d2, (cW-SBW)/2, 34);
+      ctx.globalAlpha=1; ctx.restore();
+    }
+  }
+
+  /* ── scene 5: итоговая сцена ── */
+  function drawScene5(sc,ox,oy){
+    var O=[0,0,0];
+    drawPara(O,A,B,C,[200,210,235],0.08,0.50, sc,ox,oy);
+    ctx.lineWidth=2.8;
+    ctx.strokeStyle='#4fc3f7'; ctx.fillStyle='#4fc3f7'; arrow3(O,A,sc,ox,oy);
+    ctx.strokeStyle='#ef9a9a'; ctx.fillStyle='#ef9a9a'; arrow3(O,B,sc,ox,oy);
+    ctx.strokeStyle='#a5d6a7'; ctx.fillStyle='#a5d6a7'; arrow3(O,C,sc,ox,oy);
+    var ax=A[0],ay=A[1],az=A[2], bx=B[0],by=B[1],bz=B[2], cx=C[0],cy=C[1],cz=C[2];
+    var d=det3(A,B,C);
+    var s1=cx*(ay*bz-az*by), s2=cy*(az*bx-ax*bz), s3=cz*(ax*by-ay*bx);
+    ctx.save(); ctx.textAlign='center'; ctx.font='bold 14px system-ui';
+    ctx.fillStyle='rgba(241,196,15,0.95)';
+    ctx.fillText('vol = '+d, (cW-SBW)/2, 36);
+    ctx.font='12px system-ui'; ctx.fillStyle='rgba(160,170,200,0.85)';
+    ctx.fillText('cₓ·S(yz) + (−cᵧ·S(xz)) + cᵩ·S(xy)', (cW-SBW)/2, 56);
+    ctx.fillText('= '+s1+' + ('+s2+') + '+s3+' = '+d, (cW-SBW)/2, 74);
+    ctx.restore();
+  }
+
+  /* ── scene navigation ── */
+  var scene = 0;
+  var TOTAL = 6;
+  var DESCS = [
+    'Параллелепипед P(a,&nbsp;b,&nbsp;c).<br>Его объём равен |det(a,&nbsp;b,&nbsp;c)|.',
+    'Три «Кавальери-призмы» — разложение по вектору <b>c</b>.<br>'
+      +'<span style="color:#dc5040">■</span> cₓ·S(yz) &nbsp;'
+      +'<span style="color:#32b464">■</span> −cᵧ·S(xz) &nbsp;'
+      +'<span style="color:#3482dc">■</span> cᵩ·S(xy)<br>'
+      +'Объёмы (со знаком) суммируются в det.',
+    '<b>Обратный сдвиг (принцип Кавальери):</b><br>'
+      +'v₁, v₂ каждой призмы плавно возвращаются к a и b.<br>'
+      +'Сдвиг не меняет объём — срезы ⊥ оси остаются одинаковыми.',
+    '<b>Сборка:</b> три сляба сходятся к одному началу координат.<br>'
+      +'У всех одно основание P(a,b). Экструзии cₓêₓ, cᵧêᵧ, cᵤêᵤ складываются в c.<br>'
+      +'По линейности det: vol₁+vol₂+vol₃ = vol P(a,b,c).',
+    '<b>Принцип Кавальери:</b> каждый сляб сдвигается → призма.<br>'
+      +'Сдвиг не меняет объём. Объём призмы = высота × площадь проекции.<br>'
+      +'Сумма трёх объёмов = det(a,b,c).',
+    'vol&nbsp;=&nbsp;det(a,b,c)&nbsp;=&nbsp;cₓ·S(yz)&nbsp;+&nbsp;cᵧ·S(xz)&nbsp;+&nbsp;cᵤ·S(xy).<br>'
+      +'Слябы собрались → Кавальери-сдвиг → три проекционные призмы. ∎'
+  ];
+
+  function setScene(s, noAnim){
+    var prev=scene;
+    scene=Math.max(0,Math.min(TOTAL-1,s));
+    document.getElementById('step-info').textContent='Сцена '+(scene+1)+' / '+TOTAL;
+    document.getElementById('step-desc').innerHTML=DESCS[scene];
+    document.getElementById('btn-prev').disabled=(scene===0);
+    document.getElementById('btn-next').disabled=(scene===TOTAL-1);
+    if(!noAnim && scene>prev){
+      animT=0; animStart=performance.now();
+    } else {
+      animT=1.0;
+    }
+  }
+  document.getElementById('btn-prev').addEventListener('click', function(){ setScene(scene-1, true); });
+  document.getElementById('btn-next').addEventListener('click', function(){ setScene(scene+1); });
+  setScene(0, true);
+
+  /* ── resize ── */
+  function resize(){
+    cW=window.innerWidth; cH=window.innerHeight;
+    canvas.width=Math.round(cW*DPR); canvas.height=Math.round(cH*DPR);
+    canvas.style.width=cW+'px'; canvas.style.height=cH+'px';
+  }
+  window.addEventListener('resize', resize); resize();
+
+  /* ── scene centre & scale factor ── */
+  function midSpread(){
+    var ay=A[1],az=A[2], by=B[1],bz=B[2], cy=C[1],cz=C[2];
+    return [0,(ay+by+cy)/3,(az+bz+cz)/3];
+  }
+  function midSingle(){ return vscale(vsum(vsum(A,B),C),0.5); }
+
+  function sceneMid(){
+    if(scene===0||scene===5) return midSingle();
+    if(scene===1||scene===2) return midSpread();
+    if(scene===3) return vlerp(midSpread(), midSingle(), ease(animT)); /* spread→single */
+    if(scene===4) return vlerp(midSingle(), midSpread(), ease(animT)); /* single→spread */
+    return midSingle();
+  }
+  function sceneScaleFactor(){
+    var wide=14+prismSep()*1.6, norm=14;
+    if(scene===0||scene===5) return norm;
+    if(scene===1||scene===2) return wide;
+    if(scene===3) return wide+(norm-wide)*ease(animT); /* wide→norm */
+    if(scene===4) return norm+(wide-norm)*ease(animT); /* norm→wide */
+    return norm;
+  }
+
+  /* ── main loop ── */
+  function tick(){
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,cW,cH);
+    ctx.fillStyle='#1a1d23'; ctx.fillRect(0,0,cW,cH);
+
+    if(animT<1.0) animT=Math.min(1.0,(performance.now()-animStart)/ANIM_DUR);
+    var t=ease(animT);
+
+    var dW=cW-SBW;
+    var sc=Math.min(dW,cH)*gScale/sceneScaleFactor();
+    var pm=project(sceneMid());
+    var ox=dW/2-pm[0]*sc, oy=cH/2+pm[1]*sc;
+
+    drawGrid(sc,ox,oy);
+    drawAxes(sc,ox,oy);
+    if(scene===0) drawScene0(sc,ox,oy);
+    if(scene===1) drawScene1(sc,ox,oy);
+    if(scene===2) drawScene2(sc,ox,oy,t);
+    if(scene===3) drawScene3(sc,ox,oy,t);
+    if(scene===4) drawScene4(sc,ox,oy,t);
+    if(scene===5) drawScene5(sc,ox,oy);
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

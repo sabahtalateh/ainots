@@ -4,7 +4,26 @@
       "Bash(python3 -c ' *)",
       "Bash(node --input-type=module)",
       "Bash(node -e ' *)",
-      "Bash(awk 'NR>=251 && NR<=600' /Users/kravtsov777/Code/ainots/specmatan/matan1/day5/det3d_three.html)"
+      "Bash(awk 'NR>=251 && NR<=600' /Users/kravtsov777/Code/ainots/specmatan/matan1/day5/det3d_three.html)",
+      "Bash(open /Users/kravtsov777/Code/ainots/specmatan/matan1/day5/tmp/proof_vol.html)",
+      "WebSearch",
+      "WebFetch(domain:matejlou.blog)",
+      "WebFetch(domain:www.3blue1brown.com)",
+      "WebFetch(domain:rodolphe-vaillant.fr)",
+      "WebFetch(domain:bridge.math.oregonstate.edu)",
+      "WebFetch(domain:billcookmath.com)",
+      "WebFetch(domain:www.johndcook.com)",
+      "WebFetch(domain:www.mathpages.com)",
+      "WebFetch(domain:betterexplained.com)",
+      "WebFetch(domain:math.stackexchange.com)",
+      "WebFetch(domain:angem.ru)",
+      "WebFetch(domain:kadm.kmath.ru)",
+      "WebFetch(domain:people.math.harvard.edu)",
+      "Bash(pandoc /Users/kravtsov777/Code/ainots/linal/determinant.md -s --mathjax -o /tmp/determinant.html)",
+      "Bash(open /tmp/determinant.html)",
+      "Bash(python3 -c \"import json,sys; nb=json.load\\(sys.stdin\\); [print\\(i, c['cell_type'], repr\\(c['source'][:80] if isinstance\\(c['source'], str\\) else ''.join\\(c['source']\\)[:80]\\)\\) for i,c in enumerate\\(nb['cells']\\)]\")",
+      "Bash(python3 -c \"import json,sys; nb=json.load\\(sys.stdin\\); src=nb['cells'][4]['source']; print\\(src if isinstance\\(src, str\\) else ''.join\\(src\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; nb=json.load\\(sys.stdin\\); [print\\(i, c.get\\('id','NO_ID'\\), c['cell_type']\\) for i,c in enumerate\\(nb['cells']\\)]\")"
     ]
   }
 }
