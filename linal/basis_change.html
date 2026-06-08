@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" onload="redraw()"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; overflow: hidden; display: flex; height: 100vh; }
+  #grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; cursor: grab; }
+  #grid.dragging { cursor: grabbing; }
+  .panel { position: relative; border-right: 4px solid #333; border-bottom: 4px solid #333; overflow: hidden; }
+  .panel:nth-child(2n) { border-right: none; }
+  .panel:nth-child(3), .panel:nth-child(4) { border-bottom: none; }
+  canvas { display: block; position: absolute; top: 0; left: 0; }
+  .panel-label {
+    position: absolute; top: 10px; left: 0; right: 0;
+    text-align: center; color: #555; font-size: 12px; font-family: serif;
+    pointer-events: none;
+  }
+  .vec-label { position: absolute; pointer-events: none; transform: translate(10px, -50%); }
+
+  #sidebar {
+    width: 320px; min-width: 320px;
+    background: rgba(0,0,0,0.3);
+    border-left: 4px solid #333;
+    display: flex; flex-direction: column;
+    padding: 20px 16px; gap: 16px;
+    overflow-y: auto;
+  }
+  .sidebar-title { color: #666; font-size: 11px; font-family: serif; letter-spacing: 1px; text-transform: uppercase; }
+  .vec-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-family: serif; color: #ccc; }
+  .mat-wrap { display: flex; align-items: stretch; gap: 2px; }
+  .mat-bracket { width: 6px; border-top: 2px solid #666; border-bottom: 2px solid #666; }
+  .mat-bracket.left  { border-left:  2px solid #666; border-radius: 2px 0 0 2px; }
+  .mat-bracket.right { border-right: 2px solid #666; border-radius: 0 2px 2px 0; }
+  .mat-cells { display: flex; flex-direction: column; gap: 3px; padding: 3px 2px; }
+  .mat-cell { display: flex; align-items: center; gap: 2px; }
+  input.mat-in {
+    width: 32px; background: transparent; border: none;
+    border-bottom: 1px solid #444; color: inherit;
+    font-size: 14px; font-family: serif; text-align: center;
+    outline: none; padding: 1px 2px; appearance: textfield; -moz-appearance: textfield;
+  }
+  input.mat-in::-webkit-outer-spin-button,
+  input.mat-in::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input.mat-in:focus { border-bottom-color: #888; }
+  .spin-btns { display: flex; flex-direction: column; gap: 1px; }
+  .spin-btn {
+    width: 13px; height: 11px; font-size: 8px; line-height: 1;
+    background: rgba(255,255,255,0.07); color: #777;
+    border: 1px solid #3a3a3a; border-radius: 2px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    user-select: none;
+  }
+  .spin-btn:hover { background: rgba(255,255,255,0.16); color: #bbb; }
+  .divider { border-top: 1px solid #2a2a2a; margin: 2px 0; }
+  .mat-col-gap { width: 10px; }
+  .eye-btn {
+    position: absolute; top: 6px; right: 8px; z-index: 5;
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; color: #555; padding: 2px 3px;
+    line-height: 1; border-radius: 3px; font-family: sans-serif;
+  }
+  .eye-btn:hover { color: #999; background: rgba(255,255,255,0.05); }
+  .eye-btn.off { color: #2d2d2d; }
+</style>
+</head>
+<body>
+
+<div id="grid">
+  <div class="panel" id="panel-1">
+    <canvas id="c1"></canvas>
+    <div class="panel-label">x в базисе B</div>
+    <button class="eye-btn" id="eye-panel-1" title="скрыть/показать">👁</button>
+    <label style="position:absolute;bottom:10px;right:10px;color:#555;font-size:11px;font-family:serif;display:flex;align-items:center;gap:5px;cursor:pointer;">
+      <input type="checkbox" id="show-ij-grid"> ij сетка
+    </label>
+  </div>
+  <div class="panel" id="panel-2">
+    <canvas id="c2"></canvas>
+    <div class="panel-label">x в стандартном базисе</div>
+    <button class="eye-btn" id="eye-panel-2" title="скрыть/показать">👁</button>
+  </div>
+  <div class="panel" id="panel-3">
+    <canvas id="c3"></canvas>
+    <div class="panel-label">T·x: трансформация в стандартном базисе</div>
+    <button class="eye-btn" id="eye-panel-3" title="скрыть/показать">👁</button>
+  </div>
+  <div class="panel" id="panel-4">
+    <canvas id="c4"></canvas>
+    <div class="panel-label">базис B</div>
+    <button class="eye-btn" id="eye-panel-4" title="скрыть/показать">👁</button>
+    <label style="position:absolute;bottom:10px;right:10px;color:#555;font-size:11px;font-family:serif;display:flex;align-items:center;gap:5px;cursor:pointer;">
+      <input type="checkbox" id="show-ij-grid-4"> ij сетка
+    </label>
+  </div>
+</div>
+
+<div id="sidebar">
+  <div class="sidebar-title">базис B · вектор x</div>
+  <div class="vec-row" style="flex-wrap:wrap; gap:6px;">
+    <span style="color:#a0ff80;">b⃗₁</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="b1x" type="number" value="3" style="color:#a0ff80;">
+          <div class="spin-btns"><div class="spin-btn" data-id="b1x" data-d="1">▲</div><div class="spin-btn" data-id="b1x" data-d="-1">▼</div></div>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="b1y" type="number" value="1" style="color:#a0ff80;">
+          <div class="spin-btns"><div class="spin-btn" data-id="b1y" data-d="1">▲</div><div class="spin-btn" data-id="b1y" data-d="-1">▼</div></div>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+    <span style="color:#c080ff;">b⃗₂</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="b2x" type="number" value="-1" style="color:#c080ff;">
+          <div class="spin-btns"><div class="spin-btn" data-id="b2x" data-d="1">▲</div><div class="spin-btn" data-id="b2x" data-d="-1">▼</div></div>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="b2y" type="number" value="2" style="color:#c080ff;">
+          <div class="spin-btns"><div class="spin-btn" data-id="b2y" data-d="1">▲</div><div class="spin-btn" data-id="b2y" data-d="-1">▼</div></div>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+    <span style="color:#f0d060;">x⃗</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="vx" type="number" value="2" style="color:#f0d060;">
+          <div class="spin-btns"><div class="spin-btn" data-id="vx" data-d="1">▲</div><div class="spin-btn" data-id="vx" data-d="-1">▼</div></div>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="vy" type="number" value="1" style="color:#f0d060;">
+          <div class="spin-btns"><div class="spin-btn" data-id="vy" data-d="1">▲</div><div class="spin-btn" data-id="vy" data-d="-1">▼</div></div>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title" id="bc-formula-title">координаты в базисе ij</div>
+  <div id="bc-formula" style="color:#aaa; padding: 4px 0;"></div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">трансформация T (в базисе ij)</div>
+  <div class="vec-row">
+    <span style="color:#50d0b0;">T</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="t11" type="number" value="0" style="color:#50d0b0;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t11" data-d="1">▲</div><div class="spin-btn" data-id="t11" data-d="-1">▼</div></div>
+          <div class="mat-col-gap"></div>
+          <input class="mat-in" id="t12" type="number" value="-1" style="color:#50d0b0;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t12" data-d="1">▲</div><div class="spin-btn" data-id="t12" data-d="-1">▼</div></div>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="t21" type="number" value="1" style="color:#50d0b0;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t21" data-d="1">▲</div><div class="spin-btn" data-id="t21" data-d="-1">▼</div></div>
+          <div class="mat-col-gap"></div>
+          <input class="mat-in" id="t22" type="number" value="0" style="color:#50d0b0;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t22" data-d="1">▲</div><div class="spin-btn" data-id="t22" data-d="-1">▼</div></div>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">T · x в базисе ij</div>
+  <div id="t-formula" style="color:#aaa; padding: 4px 0;"></div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">B⁻¹ · T·x: обратно в базис B</div>
+  <div id="inv-formula" style="color:#aaa; padding: 4px 0;"></div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">B⁻¹·T·B — трансформация T в базисе B</div>
+  <div id="conj-formula" style="color:#aaa; padding: 4px 0;"></div>
+
+  <div style="flex:1"></div>
+  <div class="divider"></div>
+  <div style="display:flex; align-items:center; gap:8px;">
+    <span class="sidebar-title" style="margin:0;">масштаб</span>
+    <button id="zoom-out" style="width:26px;height:26px;background:rgba(255,255,255,0.07);border:1px solid #3a3a3a;border-radius:3px;color:#888;font-size:16px;cursor:pointer;line-height:1;">−</button>
+    <span id="zoom-val" style="color:#555;font-size:12px;font-family:serif;min-width:32px;text-align:center;"></span>
+    <button id="zoom-in"  style="width:26px;height:26px;background:rgba(255,255,255,0.07);border:1px solid #3a3a3a;border-radius:3px;color:#888;font-size:16px;cursor:pointer;line-height:1;">+</button>
+  </div>
+</div>
+
+<script>
+const dpr = window.devicePixelRatio || 1;
+const _vp = JSON.parse(localStorage.getItem('bc_viewport') || 'null');
+let scale = _vp ? _vp.scale : 40;
+let panX  = _vp ? _vp.panX  : 0;
+let panY  = _vp ? _vp.panY  : 0;
+
+function saveViewport() {
+  localStorage.setItem('bc_viewport', JSON.stringify({ scale, panX, panY }));
+}
+document.getElementById('zoom-val').textContent = scale;
+
+const V  = { x: 2, y: 1 };  // координаты в базисе B
+const B1 = { x: 3, y: 1 };
+const B2 = { x: -1, y: 2 };
+const T  = { m11: 0, m12: -1, m21: 1, m22: 0 };
+
+function vStd() { return { x: V.x*B1.x + V.y*B2.x, y: V.x*B1.y + V.y*B2.y }; }
+function detB() { return B1.x * B2.y - B2.x * B1.y; }
+
+function invBvec(vx, vy) {
+  const d = detB();
+  if (Math.abs(d) < 1e-10) return { x: 0, y: 0 };
+  return { x: (B2.y * vx - B2.x * vy) / d, y: (-B1.y * vx + B1.x * vy) / d };
+}
+
+
+function fmtN(v) {
+  if (Number.isInteger(v)) return String(v);
+  const s = v.toFixed(2);
+  return s.replace(/\.?0+$/, '');
+}
+
+function renderBasisFormula() {
+  const el = document.getElementById('bc-formula');
+  if (!el || !window.katex) return;
+  if (Math.abs(detB()) < 1e-10) { el.textContent = '—'; return; }
+  const d = detB();
+  const c1 = V.x, c2 = V.y;
+  const vs = vStd();
+  const t1a = B1.x * c1, t1b = B2.x * c2;
+  const t2a = B1.y * c1, t2b = B2.y * c2;
+  const g = s => `\\textcolor{#a0ff80}{${s}}`;
+  const p = s => `\\textcolor{#c080ff}{${s}}`;
+  const y = s => `\\textcolor{#f0d060}{${s}}`;
+  function term(bv, cv, bColor) {
+    const bs = bv < 0 ? `(${fmtN(bv)})` : fmtN(bv);
+    return `${bColor(bs)}\\cdot ${y(fmtN(cv))}`;
+  }
+  function row(bv1, bv2) {
+    return `${term(bv1, c1, g)}+${term(bv2, c2, p)}`;
+  }
+  const a11 = B2.y, a12 = -B2.x, a21 = -B1.y, a22 = B1.x;
+  const n1 = a11*vs.x + a12*vs.y, n2 = a21*vs.x + a22*vs.y;
+  const det = d < 0 ? `(${fmtN(d)})` : fmtN(d);
+  function termInv(av, vv, aC) {
+    const as = av < 0 ? `(${fmtN(av)})` : fmtN(av);
+    return `${aC(as)}\\cdot ${y(fmtN(vv))}`;
+  }
+  function rowInv(a1, a2, c1, c2) {
+    return `${termInv(a1, vs.x, c1)}+${termInv(a2, vs.y, c2)}`;
+  }
+  const tex =
+    `\\begin{aligned}`+
+    `&\\begin{pmatrix}${g(fmtN(B1.x))}&${p(fmtN(B2.x))}\\\\${g(fmtN(B1.y))}&${p(fmtN(B2.y))}\\end{pmatrix}\\begin{pmatrix}${y(fmtN(c1))}\\\\${y(fmtN(c2))}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${row(B1.x,B2.x)}\\\\${row(B1.y,B2.y)}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${y(fmtN(vs.x))}\\\\${y(fmtN(vs.y))}\\end{pmatrix}\\\\[10pt]`+
+    `&\\tfrac{1}{${det}}\\begin{pmatrix}${g(fmtN(a11))}&${p(fmtN(a12))}\\\\${g(fmtN(a21))}&${p(fmtN(a22))}\\end{pmatrix}\\begin{pmatrix}${y(fmtN(vs.x))}\\\\${y(fmtN(vs.y))}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\tfrac{1}{${det}}\\begin{pmatrix}${rowInv(a11,a12,g,p)}\\\\${rowInv(a21,a22,g,p)}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\tfrac{1}{${det}}\\begin{pmatrix}${y(fmtN(n1))}\\\\${y(fmtN(n2))}\\end{pmatrix}=\\begin{pmatrix}${y(fmtN(c1))}\\\\${y(fmtN(c2))}\\end{pmatrix}`+
+    `\\end{aligned}`;
+  katex.render(tex, el, { throwOnError: false, displayMode: false });
+}
+
+function renderTFormula() {
+  const el = document.getElementById('t-formula');
+  if (!el || !window.katex) return;
+  const vs = vStd();
+  const tx = T.m11*vs.x + T.m12*vs.y;
+  const ty = T.m21*vs.x + T.m22*vs.y;
+  const t = s => `\\textcolor{#50d0b0}{${s}}`;
+  const y = s => `\\textcolor{#f0d060}{${s}}`;
+  function term(tv, vv) {
+    const ts = tv < 0 ? `(${fmtN(tv)})` : fmtN(tv);
+    return `${t(ts)}\\cdot ${y(fmtN(vv))}`;
+  }
+  function row(t1, t2) { return `${term(t1,vs.x)}+${term(t2,vs.y)}`; }
+  const tex =
+    `\\begin{aligned}`+
+    `&\\begin{pmatrix}${t(fmtN(T.m11))}&${t(fmtN(T.m12))}\\\\${t(fmtN(T.m21))}&${t(fmtN(T.m22))}\\end{pmatrix}\\begin{pmatrix}${y(fmtN(vs.x))}\\\\${y(fmtN(vs.y))}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${row(T.m11,T.m12)}\\\\${row(T.m21,T.m22)}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${t(fmtN(tx))}\\\\${t(fmtN(ty))}\\end{pmatrix}`+
+    `\\end{aligned}`;
+  katex.render(tex, el, { throwOnError: false, displayMode: false });
+}
+
+function renderInvFormula() {
+  const el = document.getElementById('inv-formula');
+  if (!el || !window.katex) return;
+  const d = detB();
+  if (Math.abs(d) < 1e-10) { el.textContent = '—'; return; }
+  const vs = vStd();
+  const tx = T.m11*vs.x + T.m12*vs.y;
+  const ty = T.m21*vs.x + T.m22*vs.y;
+  const a11 = B2.y, a12 = -B2.x, a21 = -B1.y, a22 = B1.x;
+  const n1 = a11*tx + a12*ty, n2 = a21*tx + a22*ty;
+  const rc1 = n1/d, rc2 = n2/d;
+  const g  = s => `\\textcolor{#a0ff80}{${s}}`;
+  const p  = s => `\\textcolor{#c080ff}{${s}}`;
+  const tc = s => `\\textcolor{#50d0b0}{${s}}`;
+  const y  = s => `\\textcolor{#f0d060}{${s}}`;
+  function term(av, vv, aC) {
+    const as = av < 0 ? `(${fmtN(av)})` : fmtN(av);
+    return `${aC(as)}\\cdot ${tc(fmtN(vv))}`;
+  }
+  function row(a1, a2, c1, c2) { return `${term(a1,tx,c1)}+${term(a2,ty,c2)}`; }
+  const det = d < 0 ? `(${fmtN(d)})` : fmtN(d);
+  const tex =
+    `\\begin{aligned}`+
+    `&\\tfrac{1}{${det}}\\begin{pmatrix}${g(fmtN(a11))}&${p(fmtN(a12))}\\\\${g(fmtN(a21))}&${p(fmtN(a22))}\\end{pmatrix}\\begin{pmatrix}${tc(fmtN(tx))}\\\\${tc(fmtN(ty))}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\tfrac{1}{${det}}\\begin{pmatrix}${row(a11,a12,g,p)}\\\\${row(a21,a22,g,p)}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\tfrac{1}{${det}}\\begin{pmatrix}${y(fmtN(n1))}\\\\${y(fmtN(n2))}\\end{pmatrix}=\\begin{pmatrix}${y(fmtN(rc1))}\\\\${y(fmtN(rc2))}\\end{pmatrix}`+
+    `\\end{aligned}`;
+  katex.render(tex, el, { throwOnError: false, displayMode: false });
+}
+
+function renderConjugateFormula() {
+  const el = document.getElementById('conj-formula');
+  if (!el || !window.katex) return;
+  const d = detB();
+  if (Math.abs(d) < 1e-10) { el.textContent = '—'; return; }
+  const g  = s => `\\textcolor{#a0ff80}{${s}}`;
+  const p  = s => `\\textcolor{#c080ff}{${s}}`;
+  const tc = s => `\\textcolor{#50d0b0}{${s}}`;
+  const a11 = B2.y, a12 = -B2.x, a21 = -B1.y, a22 = B1.x;
+  const det = d < 0 ? `(${fmtN(d)})` : fmtN(d);
+  // adj(B) · T  (integer)
+  const q11 = a11*T.m11 + a12*T.m21, q12 = a11*T.m12 + a12*T.m22;
+  const q21 = a21*T.m11 + a22*T.m21, q22 = a21*T.m12 + a22*T.m22;
+  // (adj·T) · B  (integer)
+  const n11 = q11*B1.x + q12*B1.y, n12 = q11*B2.x + q12*B2.y;
+  const n21 = q21*B1.x + q22*B1.y, n22 = q21*B2.x + q22*B2.y;
+  // final
+  const r11 = n11/d, r12 = n12/d, r21 = n21/d, r22 = n22/d;
+  const tex =
+    `\\begin{aligned}`+
+    `&\\tfrac{1}{${det}}\\underbrace{\\begin{pmatrix}${g(fmtN(a11))}&${p(fmtN(a12))}\\\\${g(fmtN(a21))}&${p(fmtN(a22))}\\end{pmatrix}}_{B^{-1}}`+
+    `\\underbrace{\\begin{pmatrix}${tc(fmtN(T.m11))}&${tc(fmtN(T.m12))}\\\\${tc(fmtN(T.m21))}&${tc(fmtN(T.m22))}\\end{pmatrix}}_{T}`+
+    `\\underbrace{\\begin{pmatrix}${g(fmtN(B1.x))}&${p(fmtN(B2.x))}\\\\${g(fmtN(B1.y))}&${p(fmtN(B2.y))}\\end{pmatrix}}_{B}\\\\[8pt]`+
+    `&=\\tfrac{1}{${det}}\\begin{pmatrix}${fmtN(n11)}&${fmtN(n12)}\\\\${fmtN(n21)}&${fmtN(n22)}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${fmtN(r11)}&${fmtN(r12)}\\\\${fmtN(r21)}&${fmtN(r22)}\\end{pmatrix}`+
+    `\\end{aligned}`;
+  katex.render(tex, el, { throwOnError: false, displayMode: false });
+}
+
+function redraw() { scenes.forEach(s => s.draw()); renderBasisFormula(); renderTFormula(); renderInvFormula(); renderConjugateFormula(); }
+
+['b1x','b1y','b2x','b2y','vx','vy','t11','t12','t21','t22'].forEach(id => {
+  const inp = document.getElementById(id);
+  inp.addEventListener('input', e => {
+    const v = parseFloat(e.target.value) || 0;
+    if      (id==='b1x') B1.x=v; else if (id==='b1y') B1.y=v;
+    else if (id==='b2x') B2.x=v; else if (id==='b2y') B2.y=v;
+    else if (id==='vx')  V.x=v;  else if (id==='vy')  V.y=v;
+    else if (id==='t11') T.m11=v; else if (id==='t12') T.m12=v;
+    else if (id==='t21') T.m21=v; else if (id==='t22') T.m22=v;
+    redraw();
+  });
+});
+
+let targetScale = scale; // kept in sync with scale target for animation
+let zoomRaf = null;
+
+function animateZoom() {
+  const diff = targetScale - scale;
+  if (Math.abs(diff) < 0.3) {
+    scale = targetScale;
+    redraw();
+    saveViewport();
+    zoomRaf = null;
+    return;
+  }
+  scale += diff * 0.18;
+  redraw();
+  zoomRaf = requestAnimationFrame(animateZoom);
+}
+
+document.getElementById('zoom-in').addEventListener('click', () => {
+  targetScale = Math.min(targetScale + 10, 200);
+  document.getElementById('zoom-val').textContent = targetScale;
+  if (!zoomRaf) zoomRaf = requestAnimationFrame(animateZoom);
+});
+document.getElementById('zoom-out').addEventListener('click', () => {
+  targetScale = Math.max(targetScale - 10, 20);
+  document.getElementById('zoom-val').textContent = targetScale;
+  if (!zoomRaf) zoomRaf = requestAnimationFrame(animateZoom);
+});
+
+document.querySelectorAll('.spin-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const inp = document.getElementById(btn.dataset.id);
+    inp.value = (parseFloat(inp.value)||0) + parseFloat(btn.dataset.d);
+    inp.dispatchEvent(new Event('input'));
+  });
+});
+
+const scenes = [];
+
+function makeScene(canvasId, panelId, drawFn) {
+  const canvas = document.getElementById(canvasId);
+  const panel  = document.getElementById(panelId);
+  const ctx    = canvas.getContext('2d');
+  let W, H, cx, cy;
+  let visible = true;
+  const eyeBtn = document.getElementById('eye-' + panelId);
+  if (eyeBtn) {
+    eyeBtn.addEventListener('click', () => {
+      visible = !visible;
+      eyeBtn.classList.toggle('off', !visible);
+      draw();
+    });
+  }
+
+  const labelDivs = Array.from({length: 10}, () => {
+    const d = document.createElement('div');
+    d.className = 'vec-label'; d.style.display = 'none';
+    panel.appendChild(d); return d;
+  });
+
+  function toScreen(x, y) { return [cx + x * scale + panX, cy - y * scale + panY]; }
+
+  function arrow(x1, y1, x2, y2, color, lw) {
+    const [sx1,sy1] = toScreen(x1,y1), [sx2,sy2] = toScreen(x2,y2);
+    if (Math.hypot(sx2-sx1, sy2-sy1) < 1) return;
+    const a = Math.atan2(sy2-sy1, sx2-sx1), hl = 11;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = lw || 2.5;
+    ctx.beginPath(); ctx.moveTo(sx1,sy1); ctx.lineTo(sx2,sy2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sx2, sy2);
+    ctx.lineTo(sx2 - hl*Math.cos(a-0.4), sy2 - hl*Math.sin(a-0.4));
+    ctx.lineTo(sx2 - hl*Math.cos(a+0.4), sy2 - hl*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function grid() {
+    ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 1;
+    const xMin = Math.floor((-cx - panX) / scale) - 1;
+    const xMax = Math.ceil((W - cx - panX) / scale) + 1;
+    const yMin = Math.floor((cy + panY - H) / scale) - 1;
+    const yMax = Math.ceil((cy + panY) / scale) + 1;
+    for(let i=xMin;i<=xMax;i++){const[x]=toScreen(i,0);ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(let i=yMin;i<=yMax;i++){const[,y]=toScreen(0,i);ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  }
+
+  function obliquegrid(b1, b2) {
+    const d = b1.x*b2.y - b2.x*b1.y;
+    if (Math.abs(d) < 1e-10) return;
+    ctx.strokeStyle = '#252525'; ctx.lineWidth = 1;
+    const rng = 20;
+    for(let n=-rng;n<=rng;n++){
+      const [x1,y1]=toScreen(n*b1.x - rng*b2.x, n*b1.y - rng*b2.y);
+      const [x2,y2]=toScreen(n*b1.x + rng*b2.x, n*b1.y + rng*b2.y);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      const [x3,y3]=toScreen(n*b2.x - rng*b1.x, n*b2.y - rng*b1.y);
+      const [x4,y4]=toScreen(n*b2.x + rng*b1.x, n*b2.y + rng*b1.y);
+      ctx.beginPath(); ctx.moveTo(x3,y3); ctx.lineTo(x4,y4); ctx.stroke();
+    }
+  }
+
+  function axes() {
+    const [ox, oy] = toScreen(0, 0);
+    ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0,oy); ctx.lineTo(W,oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox,0); ctx.lineTo(ox,H); ctx.stroke();
+    ctx.fillStyle = '#444'; ctx.font = '11px sans-serif';
+    const xMin = Math.floor((-cx - panX) / scale) - 1;
+    const xMax = Math.ceil((W - cx - panX) / scale) + 1;
+    const yMin = Math.floor((cy + panY - H) / scale) - 1;
+    const yMax = Math.ceil((cy + panY) / scale) + 1;
+    ctx.textAlign = 'center';
+    for(let i=xMin;i<=xMax;i++){if(!i)continue;const[x]=toScreen(i,0);ctx.fillText(i,x,oy+13);}
+    ctx.textAlign = 'right';
+    for(let i=yMin;i<=yMax;i++){if(!i)continue;const[,y]=toScreen(0,i);ctx.fillText(i,ox-5,y+4);}
+  }
+
+  function label(idx, tex, color, wx, wy) {
+    const d = labelDivs[idx]; if (!d) return;
+    d.style.display = ''; d.style.color = color;
+    if (d.dataset.tex !== tex && window.katex) { katex.render(tex, d, {throwOnError:false}); d.dataset.tex = tex; }
+    const [sx,sy] = toScreen(wx, wy);
+    d.style.left = sx+'px'; d.style.top = sy+'px';
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    labelDivs.forEach(d => d.style.display = 'none');
+    if (!visible) return;
+    drawFn({ arrow, label, grid, obliquegrid, axes, ctx, W, H, cx, cy, toScreen });
+  }
+
+  function resize() {
+    const gridEl = document.getElementById('grid');
+    W = Math.floor(gridEl.clientWidth / 2);
+    H = Math.floor(gridEl.clientHeight / 2);
+    canvas.style.width = W+'px'; canvas.style.height = H+'px';
+    canvas.width = W*dpr; canvas.height = H*dpr;
+    ctx.scale(dpr, dpr); cx = W/2; cy = H/2; draw();
+  }
+
+  scenes.push({ draw, resize });
+  window.addEventListener('resize', resize);
+  resize();
+}
+
+document.getElementById('show-ij-grid').addEventListener('change', redraw);
+document.getElementById('show-ij-grid-4').addEventListener('change', redraw);
+
+// Panel 1: новый базис B + вектор x
+makeScene('c1', 'panel-1', ({arrow, label, grid, axes, obliquegrid, ctx, toScreen, W, H}) => {
+  if (document.getElementById('show-ij-grid').checked) { grid(); axes(); }
+  obliquegrid(B1, B2);
+  if (Math.abs(detB()) > 1e-10) {
+    const rng = 30;
+    const [ox, oy] = toScreen(0, 0);
+    ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ox - rng*B1.x*scale, oy + rng*B1.y*scale); ctx.lineTo(ox + rng*B1.x*scale, oy - rng*B1.y*scale); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox - rng*B2.x*scale, oy + rng*B2.y*scale); ctx.lineTo(ox + rng*B2.x*scale, oy - rng*B2.y*scale); ctx.stroke();
+
+    const rngT = 15, tl = 4;
+    function axisTicks(bvec, color) {
+      const bn = Math.hypot(bvec.x, bvec.y);
+      if (bn < 1e-10) return;
+      const spx = bvec.y / bn, spy = bvec.x / bn;
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+      ctx.fillStyle = color; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      for (let n = -rngT; n <= rngT; n++) {
+        if (n === 0) continue;
+        const [tx, ty] = toScreen(n * bvec.x, n * bvec.y);
+        if (tx < -20 || tx > W + 20 || ty < -20 || ty > H + 20) continue;
+        ctx.strokeStyle = '#555';
+        ctx.beginPath();
+        ctx.moveTo(tx - spx*tl, ty - spy*tl);
+        ctx.lineTo(tx + spx*tl, ty + spy*tl);
+        ctx.stroke();
+        ctx.fillText(n, tx + spx*(tl+9), ty + spy*(tl+9));
+      }
+    }
+    axisTicks(B1, '#666');
+    axisTicks(B2, '#666');
+  }
+  if (Math.abs(detB()) < 1e-10) return;
+  const c1 = V.x, c2 = V.y;
+  const vs = vStd();
+
+  const s1 = Math.sign(c1)||1, s2 = Math.sign(c2)||1;
+  for (let i=0;i<Math.abs(Math.round(c1));i++)
+    arrow(i*s1*B1.x, i*s1*B1.y, (i+1)*s1*B1.x, (i+1)*s1*B1.y, '#a0ff8077', 2);
+  for (let i=0;i<Math.abs(Math.round(c2));i++)
+    arrow(c1*B1.x+i*s2*B2.x, c1*B1.y+i*s2*B2.y, c1*B1.x+(i+1)*s2*B2.x, c1*B1.y+(i+1)*s2*B2.y, '#c080ff77', 2);
+  arrow(0, 0, vs.x, vs.y, '#f0d060', 2.5);
+
+  const fmt = v => Number.isInteger(v) ? String(v) : v.toFixed(2);
+  label(0, `\\begin{pmatrix}${fmt(c1)}\\\\${fmt(c2)}\\end{pmatrix}`, '#f0d060', vs.x, vs.y);
+
+  const pad = 10, len = 20, half = 32;
+  const bx = pad, by = pad, bw = half*2, bh = half*2;
+  const ox2 = bx + half, oy2 = by + half;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(bx, by, bw, bh);
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  ctx.strokeRect(bx, by, bw, bh);
+  function arrowS(x1, y1, x2, y2, color) {
+    const a = Math.atan2(y2-y1, x2-x1), hl = 7;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - hl*Math.cos(a-0.4), y2 - hl*Math.sin(a-0.4));
+    ctx.lineTo(x2 - hl*Math.cos(a+0.4), y2 - hl*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  const b1n = Math.hypot(B1.x, B1.y) || 1;
+  const b2n = Math.hypot(B2.x, B2.y) || 1;
+  const b1ex = ox2 + (B1.x/b1n)*len, b1ey = oy2 - (B1.y/b1n)*len;
+  const b2ex = ox2 + (B2.x/b2n)*len, b2ey = oy2 - (B2.y/b2n)*len;
+  arrowS(ox2, oy2, b1ex, b1ey, '#a0ff80');
+  arrowS(ox2, oy2, b2ex, b2ey, '#c080ff');
+  ctx.font = '11px serif';
+  ctx.fillStyle = '#a0ff80'; ctx.textAlign = 'left';
+  ctx.fillText('b₁', b1ex + 3, b1ey + 4);
+  ctx.fillStyle = '#c080ff';
+  ctx.fillText('b₂', b2ex + 3, b2ey + 4);
+});
+
+// Panel 2: стандартный базис î ĵ + вектор x
+makeScene('c2', 'panel-2', ({arrow, label, grid, axes, ctx}) => {
+  grid(); axes();
+  const vs = vStd();
+  const sx = Math.sign(vs.x)||1, sy = Math.sign(vs.y)||1;
+  for(let i=0;i<Math.abs(Math.round(vs.x));i++) arrow(i*sx, 0, (i+1)*sx, 0, '#e05c3a66', 2);
+  for(let i=0;i<Math.abs(Math.round(vs.y));i++) arrow(vs.x, i*sy, vs.x, (i+1)*sy, '#5ca8e066', 2);
+  arrow(0, 0, vs.x, vs.y, '#f0d060', 2.5);
+  label(0, `\\begin{pmatrix}${fmtN(vs.x)}\\\\${fmtN(vs.y)}\\end{pmatrix}`, '#f0d060', vs.x, vs.y);
+
+  const pad = 10, len = 28;
+  const mL = 10, mR = 18, mT = 18, mB = 10;
+  const bw = mL + len + mR, bh = mT + len + mB;
+  const bx = pad, by = pad;
+  const ox = bx + mL, oy = by + mT + len;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(bx, by, bw, bh);
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  ctx.strokeRect(bx, by, bw, bh);
+  function arrowS(x1, y1, x2, y2, color) {
+    const a = Math.atan2(y2-y1, x2-x1), hl = 7;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - hl*Math.cos(a-0.4), y2 - hl*Math.sin(a-0.4));
+    ctx.lineTo(x2 - hl*Math.cos(a+0.4), y2 - hl*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  arrowS(ox, oy, ox + len, oy, '#e05c3a');
+  arrowS(ox, oy, ox, oy - len, '#5ca8e0');
+  ctx.font = '12px serif';
+  ctx.fillStyle = '#e05c3a'; ctx.textAlign = 'left';
+  ctx.fillText('î', ox + len + 3, oy + 4);
+  ctx.fillStyle = '#5ca8e0'; ctx.textAlign = 'center';
+  ctx.fillText('ĵ', ox, oy - len - 4);
+});
+makeScene('c3', 'panel-3', ({grid, axes, arrow, label, ctx}) => {
+  grid(); axes();
+  const vs = vStd();
+  const tx = T.m11*vs.x + T.m12*vs.y;
+  const ty = T.m21*vs.x + T.m22*vs.y;
+  arrow(0, 0, vs.x, vs.y, '#f0d06055', 2);
+  arrow(0, 0, tx, ty, '#50d0b0', 2.5);
+  label(0, `\\begin{pmatrix}${fmtN(tx)}\\\\${fmtN(ty)}\\end{pmatrix}`, '#50d0b0', tx, ty);
+
+  const pad = 10, len = 20, half = 32;
+  const bx = pad, by = pad, bw = half*2, bh = half*2;
+  const ox = bx + half, oy = by + half;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(bx, by, bw, bh);
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  ctx.strokeRect(bx, by, bw, bh);
+  function arrowS(x1, y1, x2, y2, color) {
+    const a = Math.atan2(y2-y1, x2-x1), hl = 7;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - hl*Math.cos(a-0.4), y2 - hl*Math.sin(a-0.4));
+    ctx.lineTo(x2 - hl*Math.cos(a+0.4), y2 - hl*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  const ti_n = Math.hypot(T.m11, T.m21) || 1;
+  const tj_n = Math.hypot(T.m12, T.m22) || 1;
+  const t1ex = ox + (T.m11/ti_n)*len, t1ey = oy - (T.m21/ti_n)*len;
+  const t2ex = ox + (T.m12/tj_n)*len, t2ey = oy - (T.m22/tj_n)*len;
+  arrowS(ox, oy, t1ex, t1ey, '#e05c3a');
+  arrowS(ox, oy, t2ex, t2ey, '#5ca8e0');
+  ctx.font = '11px serif';
+  ctx.fillStyle = '#e05c3a'; ctx.textAlign = 'left';
+  ctx.fillText('t₁', t1ex + 3, t1ey + 4);
+  ctx.fillStyle = '#5ca8e0'; ctx.textAlign = 'left';
+  ctx.fillText('t₂', t2ex + 3, t2ey + 4);
+});
+makeScene('c4', 'panel-4', ({obliquegrid, grid, axes, arrow, label, ctx, toScreen, W, H}) => {
+  if (document.getElementById('show-ij-grid-4').checked) { grid(); axes(); }
+  obliquegrid(B1, B2);
+  if (Math.abs(detB()) > 1e-10) {
+    const rng = 30;
+    const [ox, oy] = toScreen(0, 0);
+    ctx.strokeStyle = '#3a3a3a'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(ox-rng*B1.x*scale, oy+rng*B1.y*scale); ctx.lineTo(ox+rng*B1.x*scale, oy-rng*B1.y*scale); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox-rng*B2.x*scale, oy+rng*B2.y*scale); ctx.lineTo(ox+rng*B2.x*scale, oy-rng*B2.y*scale); ctx.stroke();
+    const rngT = 15, tl = 4;
+    function axisTicks(bvec) {
+      const bn = Math.hypot(bvec.x, bvec.y); if (bn < 1e-10) return;
+      const spx = bvec.y/bn, spy = bvec.x/bn;
+      ctx.strokeStyle = '#555'; ctx.lineWidth = 1;
+      ctx.fillStyle = '#666'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      for (let n=-rngT; n<=rngT; n++) {
+        if (n===0) continue;
+        const [tx,ty] = toScreen(n*bvec.x, n*bvec.y);
+        if (tx<-20||tx>W+20||ty<-20||ty>H+20) continue;
+        ctx.strokeStyle = '#555';
+        ctx.beginPath(); ctx.moveTo(tx-spx*tl,ty-spy*tl); ctx.lineTo(tx+spx*tl,ty+spy*tl); ctx.stroke();
+        ctx.fillText(n, tx+spx*(tl+9), ty+spy*(tl+9));
+      }
+    }
+    axisTicks(B1); axisTicks(B2);
+  }
+
+  if (Math.abs(detB()) > 1e-10) {
+    const vs = vStd();
+    const tx = T.m11*vs.x + T.m12*vs.y, ty = T.m21*vs.x + T.m22*vs.y;
+    const d = detB();
+    const rc1 = (B2.y*tx - B2.x*ty)/d, rc2 = (-B1.y*tx + B1.x*ty)/d;
+    arrow(0, 0, rc1*B1.x, rc1*B1.y, '#a0ff8077', 2);
+    arrow(rc1*B1.x, rc1*B1.y, rc1*B1.x+rc2*B2.x, rc1*B1.y+rc2*B2.y, '#c080ff77', 2);
+    arrow(0, 0, tx, ty, '#50d0b0', 2.5);
+    const fmt = v => Number.isInteger(v) ? String(v) : v.toFixed(2);
+    label(0, `\\begin{pmatrix}${fmt(rc1)}\\\\${fmt(rc2)}\\end{pmatrix}`, '#50d0b0', tx, ty);
+  }
+
+  const pad = 10, len = 20, half = 32;
+  const bx = pad, by = pad, bw = half*2, bh = half*2;
+  const ox = bx + half, oy = by + half;
+  ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(bx, by, bw, bh);
+  ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
+  ctx.strokeRect(bx, by, bw, bh);
+  function arrowS(x1, y1, x2, y2, color) {
+    const a = Math.atan2(y2-y1, x2-x1), hl = 7;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-hl*Math.cos(a-0.4), y2-hl*Math.sin(a-0.4));
+    ctx.lineTo(x2-hl*Math.cos(a+0.4), y2-hl*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+  const b1n = Math.hypot(B1.x,B1.y)||1, b2n = Math.hypot(B2.x,B2.y)||1;
+  const b1ex = ox+(B1.x/b1n)*len, b1ey = oy-(B1.y/b1n)*len;
+  const b2ex = ox+(B2.x/b2n)*len, b2ey = oy-(B2.y/b2n)*len;
+  arrowS(ox,oy,b1ex,b1ey,'#a0ff80');
+  arrowS(ox,oy,b2ex,b2ey,'#c080ff');
+  ctx.font = '11px serif';
+  ctx.fillStyle = '#a0ff80'; ctx.textAlign = 'left'; ctx.fillText('b₁',b1ex+3,b1ey+4);
+  ctx.fillStyle = '#c080ff'; ctx.fillText('b₂',b2ex+3,b2ey+4);
+});
+
+{
+  const gridEl = document.getElementById('grid');
+  let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+
+  gridEl.addEventListener('mousedown', e => {
+    dragging = true;
+    startX = e.clientX; startY = e.clientY;
+    startPanX = panX; startPanY = panY;
+    gridEl.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    panX = startPanX + (e.clientX - startX);
+    panY = startPanY + (e.clientY - startY);
+    redraw();
+  });
+  window.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    gridEl.classList.remove('dragging');
+    saveViewport();
+  });
+
+  gridEl.addEventListener('wheel', e => {
+    e.preventDefault();
+    const panelW = gridEl.clientWidth / 2;
+    const panelH = gridEl.clientHeight / 2;
+    const rect = gridEl.getBoundingClientRect();
+    const lx = (e.clientX - rect.left) % panelW;
+    const ly = (e.clientY - rect.top) % panelH;
+    const dx = lx - panelW / 2;
+    const dy = ly - panelH / 2;
+    const factor = e.ctrlKey ? 0.01 : 0.002;
+    const newScale = Math.max(20, Math.min(200, scale * Math.exp(-e.deltaY * factor)));
+    const r = newScale / scale;
+    panX = dx * (1 - r) + panX * r;
+    panY = dy * (1 - r) + panY * r;
+    scale = newScale;
+    targetScale = newScale;
+    document.getElementById('zoom-val').textContent = Math.round(scale);
+    redraw();
+    saveViewport();
+  }, { passive: false });
+}
+</script>
+</body>
+</html>
