@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Параллелепипед</title>
+<style>
+  html,body { margin:0; height:100%; overflow:hidden; background:#1a1d23; color:#ddd; font-family:system-ui,sans-serif; }
+  canvas { display:block; }
+  #ctrl-resize {
+    position:absolute; left:-3px; top:0; bottom:0; width:6px;
+    cursor:ew-resize; background:transparent; z-index:10;
+  }
+  #ctrl-resize:hover, #ctrl-resize.dragging { background:rgba(165,200,255,0.25); }
+  #ctrl {
+    position:absolute; top:0; right:0; bottom:0; width:360px;
+    box-sizing:border-box;
+    background:rgba(12,14,20,0.97); border-left:1px solid #252840;
+    padding:14px; font-size:13px; user-select:none;
+    display:flex; flex-direction:column; gap:10px; overflow-y:auto;
+  }
+  #ctrl > #ctrl-resize { position:absolute; }
+  h3 { margin:0 0 2px; font-size:13px; color:#a5c8ff; }
+  table { border-collapse:collapse; width:100%; }
+  td { padding:2px; vertical-align:middle; font-size:16px; }
+  .va { color:#4fc3f7; font-weight:bold; }
+  .vb { color:#ef9a9a; font-weight:bold; }
+  .vc { color:#a5d6a7; font-weight:bold; }
+  #a0,#a1,#a2 { color:#4fc3f7; }
+  #b0,#b1,#b2 { color:#ef9a9a; }
+  #c0,#c1,#c2 { color:#a5d6a7; }
+  .btn {
+    background:#22263a; border:1px solid #3a4060; color:#ccc;
+    border-radius:4px; width:20px; height:20px; cursor:pointer;
+    font-size:13px; line-height:1; padding:0; text-align:center;
+  }
+  .btn:hover { background:#3a4060; }
+  #det-row { font-size:15px; color:#aaa; border-top:1px solid #252840; padding-top:8px; line-height:2; }
+  .exp-btn { background:#22263a; border:1px solid; border-radius:4px; padding:2px 10px; cursor:pointer; font-size:12px; font-weight:bold; opacity:0.45; }
+  .exp-btn.active { opacity:1; background:rgba(255,255,255,0.07); }
+  .proj-btn { background:#22263a; border:1px solid; border-radius:4px; padding:2px 12px; cursor:pointer; font-size:12px; font-weight:bold; opacity:0.35; }
+  .proj-btn.active { opacity:1; background:rgba(255,255,255,0.07); }
+  #hint { font-size:11px; color:#445; margin-top:auto; line-height:1.8; }
+  .mem-slot { display:flex; flex-direction:column; gap:2px; align-items:center;
+    border:1px solid transparent; border-radius:5px; padding:2px; transition:border-color 0.15s; }
+  .mem-slot.filled { border-color:#3a5080; background:rgba(60,90,160,0.12); }
+  .mem-slot.active { border-color:#b8962a; background:rgba(180,140,30,0.15); }
+  .mem-btn { background:#1a1e2c; border:1px solid #2e3452; color:#667; border-radius:4px;
+    width:42px; height:28px; cursor:pointer; font-size:16px; font-weight:bold; padding:0;
+    transition:background 0.1s; }
+  .mem-btn:hover { background:#2a2e40; color:#aac; }
+  .mem-slot.filled .mem-btn { color:#a5c8ff; border-color:#4060a0; }
+  .mem-clr { background:none; border:none; color:#334; font-size:11px; cursor:pointer;
+    padding:0; line-height:1; display:none; }
+  .mem-slot.filled .mem-clr { display:block; color:#556; }
+  .mem-slot.filled .mem-clr:hover { color:#e77; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="ctrl">
+  <div id="ctrl-resize"></div>
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;border-bottom:1px solid #252840;padding-bottom:8px;">
+    <span style="font-size:11px;color:#556;flex-shrink:0;">mem:</span>
+    <div id="mem-slots" style="display:flex;gap:4px;flex:1;flex-wrap:nowrap;"></div>
+  </div>
+  <h3>Векторы</h3>
+  <table>
+    <tr>
+      <td><span class="va">a</span></td>
+      <td>(<span id="a0">3</span></td>
+      <td><button class="btn" data-v="A" data-i="0" data-d="-1">−</button><button class="btn" data-v="A" data-i="0" data-d="1">+</button></td>
+      <td><span id="a1">1</span></td>
+      <td><button class="btn" data-v="A" data-i="1" data-d="-1">−</button><button class="btn" data-v="A" data-i="1" data-d="1">+</button></td>
+      <td><span id="a2">1</span>)</td>
+      <td><button class="btn" data-v="A" data-i="2" data-d="-1">−</button><button class="btn" data-v="A" data-i="2" data-d="1">+</button></td>
+    </tr>
+    <tr>
+      <td><span class="vb">b</span></td>
+      <td>(<span id="b0">1</span></td>
+      <td><button class="btn" data-v="B" data-i="0" data-d="-1">−</button><button class="btn" data-v="B" data-i="0" data-d="1">+</button></td>
+      <td><span id="b1">3</span></td>
+      <td><button class="btn" data-v="B" data-i="1" data-d="-1">−</button><button class="btn" data-v="B" data-i="1" data-d="1">+</button></td>
+      <td><span id="b2">1</span>)</td>
+      <td><button class="btn" data-v="B" data-i="2" data-d="-1">−</button><button class="btn" data-v="B" data-i="2" data-d="1">+</button></td>
+    </tr>
+    <tr>
+      <td><span class="vc">c</span></td>
+      <td>(<span id="c0">1</span></td>
+      <td><button class="btn" data-v="C" data-i="0" data-d="-1">−</button><button class="btn" data-v="C" data-i="0" data-d="1">+</button></td>
+      <td><span id="c1">1</span></td>
+      <td><button class="btn" data-v="C" data-i="1" data-d="-1">−</button><button class="btn" data-v="C" data-i="1" data-d="1">+</button></td>
+      <td><span id="c2">3</span>)</td>
+      <td><button class="btn" data-v="C" data-i="2" data-d="-1">−</button><button class="btn" data-v="C" data-i="2" data-d="1">+</button></td>
+    </tr>
+  </table>
+
+  <div id="det-row">
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+      <span style="font-size:12px;color:#888;">разложение по:</span>
+      <button class="exp-btn" data-v="a" style="color:#4fc3f7;border-color:#4fc3f7;">a</button>
+      <button class="exp-btn" data-v="b" style="color:#ef9a9a;border-color:#ef9a9a;">b</button>
+      <button class="exp-btn active" data-v="c" style="color:#a5d6a7;border-color:#a5d6a7;">c</button>
+    </div>
+    det = <b style="color:#f1c40f" id="detval">?</b><br>
+    <span id="det-expand" style="color:#aaa;font-size:14px;line-height:2;">?</span>
+  </div>
+
+  <div style="border-top:1px solid #252840;padding-top:8px;display:flex;flex-direction:column;gap:8px;">
+    <div style="font-size:12px;color:#a5c8ff;">Выравнивание</div>
+    <div>
+      <div style="font-size:11px;color:#4fc3f7;margin-bottom:3px;">a → ось x</div>
+      <input type="range" id="shear-ta" min="0" max="100" value="0"
+             style="width:100%;accent-color:#4fc3f7;">
+    </div>
+    <div>
+      <div style="font-size:11px;color:#ef9a9a;margin-bottom:3px;">b → ось y</div>
+      <input type="range" id="shear-tb" min="0" max="100" value="0"
+             style="width:100%;accent-color:#ef9a9a;">
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <button id="proj-toggle" style="background:#22263a;border:1px solid #3a4060;color:#a5c8ff;
+      border-radius:4px;padding:5px 10px;cursor:pointer;font-size:12px;text-align:left;">
+      показать проекции
+    </button>
+    <div id="proj-sel" style="display:none;gap:6px;">
+      <button class="proj-btn active" data-p="proj-yz" style="color:#e74c3c;border-color:#e74c3c;">yz</button>
+      <button class="proj-btn active" data-p="proj-xz" style="color:#2ecc71;border-color:#2ecc71;">xz</button>
+      <button class="proj-btn active" data-p="proj-xy" style="color:#3498db;border-color:#3498db;">xy</button>
+    </div>
+  </div>
+
+  <div id="hint">
+    Тяни — вращение<br>
+    Колёсико — зум
+  </div>
+</div>
+
+<script>
+(function(){
+  var canvas = document.getElementById("c");
+  var ctx    = canvas.getContext("2d");
+  var DPR    = window.devicePixelRatio || 1;
+  var cW = 0, cH = 0;
+  var SBW    = +(localStorage.getItem("para3d_sbw") || 360);
+
+  /* ── sidebar resize ── */
+  (function(){
+    var ctrl    = document.getElementById("ctrl");
+    var handle  = document.getElementById("ctrl-resize");
+    var resizing = false, startX, startW;
+    ctrl.style.width = SBW+"px";
+    handle.addEventListener("mousedown", function(e){
+      resizing = true; startX = e.clientX; startW = SBW;
+      handle.classList.add("dragging"); e.preventDefault();
+    });
+    window.addEventListener("mousemove", function(e){
+      if(!resizing) return;
+      SBW = Math.max(200, Math.min(window.innerWidth*0.7, startW+(startX-e.clientX)));
+      ctrl.style.width = SBW+"px";
+    });
+    window.addEventListener("mouseup", function(){
+      if(!resizing) return;
+      resizing = false; handle.classList.remove("dragging");
+      try{ localStorage.setItem("para3d_sbw", SBW); }catch(e){}
+    });
+  })();
+
+  var LS_KEY = "para3d_vecs";
+  var defaults = { A:[3,1,1], B:[1,3,1], C:[1,1,3] };
+  var saved = (function(){ try{ var s=localStorage.getItem(LS_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } })();
+  var A = saved ? saved.A : defaults.A.slice();
+  var B = saved ? saved.B : defaults.B.slice();
+  var C = saved ? saved.C : defaults.C.slice();
+  var vecs = { A:A, B:B, C:C };
+  function saveVecs(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({A:A,B:B,C:C})); }catch(e){} }
+  var spans = {
+    A: [document.getElementById("a0"), document.getElementById("a1"), document.getElementById("a2")],
+    B: [document.getElementById("b0"), document.getElementById("b1"), document.getElementById("b2")],
+    C: [document.getElementById("c0"), document.getElementById("c1"), document.getElementById("c2")]
+  };
+  ["A","B","C"].forEach(function(k){ vecs[k].forEach(function(v,i){ spans[k][i].textContent=v; }); });
+
+  /* ── memory slots ── */
+  var MEM_KEY = "para3d_mem";
+  var memSlots = (function(){
+    try{ var s=localStorage.getItem(MEM_KEY); return s?JSON.parse(s):Array(10).fill(null); }catch(e){ return Array(10).fill(null); }
+  })();
+  function saveMem(){ try{ localStorage.setItem(MEM_KEY, JSON.stringify(memSlots)); }catch(e){} }
+  function vecsEq(s){ return s && s.A[0]===A[0]&&s.A[1]===A[1]&&s.A[2]===A[2]&&s.B[0]===B[0]&&s.B[1]===B[1]&&s.B[2]===B[2]&&s.C[0]===C[0]&&s.C[1]===C[1]&&s.C[2]===C[2]; }
+  function updateMemHighlight(){
+    for(var i=0;i<10;i++){
+      var el=document.getElementById("mem-slot-"+i); if(!el) continue;
+      el.classList.toggle("active", !!vecsEq(memSlots[i]));
+    }
+  }
+  (function buildMemUI(){
+    var container = document.getElementById("mem-slots");
+    for(var i=0;i<10;i++){
+      (function(idx){
+        var slot = document.createElement("div"); slot.className="mem-slot"; slot.id="mem-slot-"+idx;
+        if(memSlots[idx]) slot.classList.add("filled");
+        var rBtn = document.createElement("button");
+        rBtn.className="mem-btn"; rBtn.id="mem-r-"+idx; rBtn.textContent="R"+(idx+1);
+        var wBtn = document.createElement("button");
+        wBtn.className="mem-btn"; wBtn.textContent="W"+(idx+1);
+        rBtn.title = memSlots[idx] ? "Загрузить слот "+(idx+1) : "Слот пуст";
+        rBtn.addEventListener("click", function(){
+          if(!memSlots[idx]) return;
+          var s=memSlots[idx];
+          A[0]=s.A[0]; A[1]=s.A[1]; A[2]=s.A[2];
+          B[0]=s.B[0]; B[1]=s.B[1]; B[2]=s.B[2];
+          C[0]=s.C[0]; C[1]=s.C[1]; C[2]=s.C[2];
+          ["A","B","C"].forEach(function(k){ vecs[k].forEach(function(v,i){ spans[k][i].textContent=v; }); });
+          saveVecs(); updateMemHighlight();
+        });
+        wBtn.title = "Сохранить в слот "+(idx+1);
+        wBtn.addEventListener("click", function(){
+          memSlots[idx] = { A:A.slice(), B:B.slice(), C:C.slice() };
+          saveMem();
+          document.getElementById("mem-slot-"+idx).classList.add("filled");
+          updateMemHighlight();
+          rBtn.title = "Загрузить слот "+(idx+1);
+        });
+        var clrBtn = document.createElement("button");
+        clrBtn.className="mem-clr"; clrBtn.textContent="✕"; clrBtn.title="Очистить слот "+(idx+1);
+        clrBtn.addEventListener("click", function(){
+          memSlots[idx] = null;
+          saveMem();
+          slot.classList.remove("filled","active");
+          rBtn.title = "Слот пуст";
+        });
+        slot.appendChild(rBtn); slot.appendChild(wBtn); slot.appendChild(clrBtn);
+        container.appendChild(slot);
+      })(i);
+    }
+  })();
+  updateMemHighlight();
+
+  function det3(a,b,c){
+    return a[0]*(b[1]*c[2]-b[2]*c[1])
+          -a[1]*(b[0]*c[2]-b[2]*c[0])
+          +a[2]*(b[0]*c[1]-b[1]*c[0]);
+  }
+
+  /* ── projection toggle ── */
+  var projVisible = localStorage.getItem("para3d_proj") === "1";
+  var LS_PE = { "proj-yz":"para3d_pyz", "proj-xz":"para3d_pxz", "proj-xy":"para3d_pxy" };
+  var projEnabled = {};
+  ["proj-yz","proj-xz","proj-xy"].forEach(function(k){
+    projEnabled[k] = localStorage.getItem(LS_PE[k]) !== "0";
+  });
+  (function(){
+    var btn = document.getElementById("proj-toggle");
+    var sel = document.getElementById("proj-sel");
+    function applyMaster(){
+      btn.textContent = projVisible ? "скрыть проекции" : "показать проекции";
+      btn.style.borderColor = projVisible ? "#a5d6a7" : "#3a4060";
+      btn.style.color       = projVisible ? "#a5d6a7" : "#a5c8ff";
+      sel.style.display     = projVisible ? "flex" : "none";
+      try{ localStorage.setItem("para3d_proj", projVisible?"1":"0"); }catch(e){}
+    }
+    function applyButtons(){
+      document.querySelectorAll(".proj-btn").forEach(function(b){
+        b.classList.toggle("active", projEnabled[b.dataset.p]);
+      });
+    }
+    applyMaster(); applyButtons();
+    btn.addEventListener("click", function(){ projVisible=!projVisible; applyMaster(); });
+    sel.addEventListener("click", function(e){
+      var b = e.target.closest(".proj-btn"); if(!b) return;
+      var k = b.dataset.p;
+      projEnabled[k] = !projEnabled[k];
+      try{ localStorage.setItem(LS_PE[k], projEnabled[k]?"1":"0"); }catch(e){}
+      applyButtons();
+    });
+  })();
+
+  var expandBy = localStorage.getItem("para3d_expand") || "c";
+  document.querySelectorAll(".exp-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.v===expandBy); });
+  document.getElementById("det-row").addEventListener("click", function(e){
+    var btn = e.target.closest(".exp-btn"); if(!btn) return;
+    expandBy = btn.dataset.v;
+    try{ localStorage.setItem("para3d_expand", expandBy); }catch(e){}
+    document.querySelectorAll(".exp-btn").forEach(function(b){ b.classList.toggle("active", b.dataset.v===expandBy); });
+    updateUI();
+  });
+
+  function updateUI(){
+    var d = det3(A,B,C);
+    document.getElementById("detval").textContent = d;
+    function ca(x){ return "<span style='color:#4fc3f7'>"+x+"</span>"; }
+    function cb(x){ return "<span style='color:#ef9a9a'>"+x+"</span>"; }
+    function cc(x){ return "<span style='color:#a5d6a7'>"+x+"</span>"; }
+    var html = "";
+    if(expandBy === "c"){
+      var m1=A[1]*B[2]-A[2]*B[1], m2=A[0]*B[2]-A[2]*B[0], m3=A[0]*B[1]-A[1]*B[0];
+      html =
+        cc("c<sub>x</sub>")+"·("+ca("a<sub>y</sub>")+cb("b<sub>z</sub>")+"−"+ca("a<sub>z</sub>")+cb("b<sub>y</sub>")+") − "+
+        cc("c<sub>y</sub>")+"·("+ca("a<sub>x</sub>")+cb("b<sub>z</sub>")+"−"+ca("a<sub>z</sub>")+cb("b<sub>x</sub>")+") + "+
+        cc("c<sub>z</sub>")+"·("+ca("a<sub>x</sub>")+cb("b<sub>y</sub>")+"−"+ca("a<sub>y</sub>")+cb("b<sub>x</sub>")+")<br>"+
+        "= "+cc(C[0])+"·("+ca(A[1])+"·"+cb(B[2])+"−"+ca(A[2])+"·"+cb(B[1])+") − "+
+           cc(C[1])+"·("+ca(A[0])+"·"+cb(B[2])+"−"+ca(A[2])+"·"+cb(B[0])+") + "+
+           cc(C[2])+"·("+ca(A[0])+"·"+cb(B[1])+"−"+ca(A[1])+"·"+cb(B[0])+")<br>"+
+        "= "+cc(C[0])+"·("+m1+") − "+cc(C[1])+"·("+m2+") + "+cc(C[2])+"·("+m3+")";
+    } else if(expandBy === "a"){
+      var m1=B[1]*C[2]-B[2]*C[1], m2=B[0]*C[2]-B[2]*C[0], m3=B[0]*C[1]-B[1]*C[0];
+      html =
+        ca("a<sub>x</sub>")+"·("+cb("b<sub>y</sub>")+cc("c<sub>z</sub>")+"−"+cb("b<sub>z</sub>")+cc("c<sub>y</sub>")+") − "+
+        ca("a<sub>y</sub>")+"·("+cb("b<sub>x</sub>")+cc("c<sub>z</sub>")+"−"+cb("b<sub>z</sub>")+cc("c<sub>x</sub>")+") + "+
+        ca("a<sub>z</sub>")+"·("+cb("b<sub>x</sub>")+cc("c<sub>y</sub>")+"−"+cb("b<sub>y</sub>")+cc("c<sub>x</sub>")+")<br>"+
+        "= "+ca(A[0])+"·("+cb(B[1])+"·"+cc(C[2])+"−"+cb(B[2])+"·"+cc(C[1])+") − "+
+           ca(A[1])+"·("+cb(B[0])+"·"+cc(C[2])+"−"+cb(B[2])+"·"+cc(C[0])+") + "+
+           ca(A[2])+"·("+cb(B[0])+"·"+cc(C[1])+"−"+cb(B[1])+"·"+cc(C[0])+")<br>"+
+        "= "+ca(A[0])+"·("+m1+") − "+ca(A[1])+"·("+m2+") + "+ca(A[2])+"·("+m3+")";
+    } else {
+      var m1=A[0]*C[2]-A[2]*C[0], m2=A[1]*C[2]-A[2]*C[1], m3=A[0]*C[1]-A[1]*C[0];
+      html =
+        "−"+cb("b<sub>x</sub>")+"·("+ca("a<sub>y</sub>")+cc("c<sub>z</sub>")+"−"+ca("a<sub>z</sub>")+cc("c<sub>y</sub>")+") + "+
+        cb("b<sub>y</sub>")+"·("+ca("a<sub>x</sub>")+cc("c<sub>z</sub>")+"−"+ca("a<sub>z</sub>")+cc("c<sub>x</sub>")+") − "+
+        cb("b<sub>z</sub>")+"·("+ca("a<sub>x</sub>")+cc("c<sub>y</sub>")+"−"+ca("a<sub>y</sub>")+cc("c<sub>x</sub>")+")<br>"+
+        "= −"+cb(B[0])+"·("+ca(A[1])+"·"+cc(C[2])+"−"+ca(A[2])+"·"+cc(C[1])+") + "+
+            cb(B[1])+"·("+ca(A[0])+"·"+cc(C[2])+"−"+ca(A[2])+"·"+cc(C[0])+") − "+
+            cb(B[2])+"·("+ca(A[0])+"·"+cc(C[1])+"−"+ca(A[1])+"·"+cc(C[0])+")<br>"+
+        "= −"+cb(B[0])+"·("+m1+") + "+cb(B[1])+"·("+m2+") − "+cb(B[2])+"·("+m3+")";
+    }
+    document.getElementById("det-expand").innerHTML = html;
+  }
+  updateUI();
+
+  document.getElementById("ctrl").addEventListener("click", function(e){
+    var b = e.target.closest(".btn"); if(!b) return;
+    var v = b.dataset.v, i = +b.dataset.i, d = +b.dataset.d;
+    if(!vecs[v]) return;
+    vecs[v][i] += d;
+    spans[v][i].textContent = vecs[v][i];
+    saveVecs();
+    updateUI();
+    updateMemHighlight();
+  });
+
+  /* ── camera ── */
+  var CAM_KEY = "para3d_cam";
+  var savedCam = (function(){ try{ var s=localStorage.getItem(CAM_KEY); return s?JSON.parse(s):null; }catch(e){ return null; } })();
+  var cam = savedCam || { theta: 0.55, phi: 0.50 };
+  var gScale = savedCam ? savedCam.scale : 1.0;
+  function saveCam(){ try{ localStorage.setItem(CAM_KEY, JSON.stringify({theta:cam.theta,phi:cam.phi,scale:gScale})); }catch(e){} }
+
+  var drag = { active: false, x: 0, y: 0 };
+  window.addEventListener("mousedown", function(e){
+    if(e.target.closest("#ctrl")) return;
+    if(projVisible && e.clientX < cW - SBW){
+      var borderY = cH - MINI_H;
+      if(Math.abs(e.clientY - borderY) <= 5){
+        miniResizing = true;
+        miniResize.startY = e.clientY;
+        miniResize.startH = MINI_H;
+        return;
+      }
+    }
+    drag.active = true; drag.x = e.clientX; drag.y = e.clientY;
+  });
+  window.addEventListener("mouseup", function(){
+    if(miniResizing){
+      miniResizing = false;
+      canvas.style.cursor = "";
+      try{ localStorage.setItem("para3d_mini_h", Math.round(MINI_H)); }catch(ex){}
+      return;
+    }
+    drag.active = false; saveCam();
+  });
+  window.addEventListener("mousemove", function(e){
+    if(miniResizing){
+      MINI_H = Math.max(80, Math.min(cH * 0.7, miniResize.startH + (miniResize.startY - e.clientY)));
+      canvas.style.cursor = "ns-resize";
+      return;
+    }
+    if(!drag.active) return;
+    cam.theta -= (e.clientX - drag.x) * 0.007;
+    cam.phi   -= (e.clientY - drag.y) * 0.007;
+    cam.phi = Math.max(0.05, Math.min(Math.PI/2 - 0.03, cam.phi));
+    drag.x = e.clientX; drag.y = e.clientY;
+  });
+  canvas.addEventListener("mousemove", function(e){
+    if(miniResizing || drag.active) return;
+    if(!projVisible || e.clientX >= cW - SBW){ canvas.style.cursor = ""; return; }
+    canvas.style.cursor = Math.abs(e.clientY - (cH - MINI_H)) <= 5 ? "ns-resize" : "";
+  });
+  window.addEventListener("wheel", function(e){
+    gScale = Math.max(0.2, Math.min(4.0, gScale - e.deltaY * 0.001));
+    saveCam();
+  }, { passive: true });
+
+  /* ── projection ── */
+  function project(p){
+    var ct = Math.cos(cam.theta), st = Math.sin(cam.theta);
+    var cp = Math.cos(cam.phi),   sp = Math.sin(cam.phi);
+    var rx = -(ct*p[0] + st*p[1]);
+    var ry = -st*p[0] + ct*p[1];
+    return [rx, -sp*ry + cp*p[2]];
+  }
+  function scr(p3, sc, ox, oy){
+    var p = project(p3);
+    return { x: ox + p[0]*sc, y: oy - p[1]*sc };
+  }
+  function line3(a, b, sc, ox, oy){
+    var pa = scr(a,sc,ox,oy), pb = scr(b,sc,ox,oy);
+    ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y);
+  }
+  function face3(pts, col, sc, ox, oy){
+    var ps = pts.map(function(p){ return scr(p,sc,ox,oy); });
+    ctx.beginPath(); ctx.moveTo(ps[0].x, ps[0].y);
+    for(var i=1; i<ps.length; i++) ctx.lineTo(ps[i].x, ps[i].y);
+    ctx.closePath(); ctx.fillStyle = col; ctx.fill();
+  }
+  function arrow3(from, to, sc, ox, oy){
+    var a = scr(from,sc,ox,oy), b = scr(to,sc,ox,oy);
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    var dx = b.x-a.x, dy = b.y-a.y, len = Math.hypot(dx,dy); if(len<1) return;
+    var ux = dx/len, uy = dy/len, hs = 9;
+    ctx.beginPath(); ctx.moveTo(b.x,b.y);
+    ctx.lineTo(b.x-ux*hs-uy*hs*0.4, b.y-uy*hs+ux*hs*0.4);
+    ctx.lineTo(b.x-ux*hs+uy*hs*0.4, b.y-uy*hs-ux*hs*0.4);
+    ctx.closePath(); ctx.fill();
+  }
+
+  /* ── math helpers ── */
+  function vdot(u,v){ return u[0]*v[0]+u[1]*v[1]+u[2]*v[2]; }
+  function vadd(u,v,s){ return [u[0]+v[0]*s, u[1]+v[1]*s, u[2]+v[2]*s]; }
+  function vlerp(u,v,t){ return [u[0]+(v[0]-u[0])*t, u[1]+(v[1]-u[1])*t, u[2]+(v[2]-u[2])*t]; }
+  function vsum(u,v){ return [u[0]+v[0],u[1]+v[1],u[2]+v[2]]; }
+
+  /* Shear b onto y-axis using Acur and c: find s1,s2 so B-s1*Acur-s2*C = [0,?,0] */
+  function shearBtoY(Acur){
+    var det2 = Acur[0]*C[2] - Acur[2]*C[0];
+    if(Math.abs(det2) < 1e-10){
+      var cc = vdot(C,C);
+      return cc>0 ? vadd(B, C, -vdot(B,C)/cc) : B.slice();
+    }
+    var s1 = (B[0]*C[2] - B[2]*C[0]) / det2;
+    var s2 = (Acur[0]*B[2] - Acur[2]*B[0]) / det2;
+    return vadd(vadd(B, Acur, -s1), C, -s2);
+  }
+
+  /* Shear a onto x-axis using b and c (elementary row ops, preserves det):
+     find s1,s2 so that A - s1*B - s2*C has y=0 and z=0 */
+  function shearAtoX(){
+    var det2 = B[1]*C[2] - B[2]*C[1];
+    if(Math.abs(det2) < 1e-10){
+      // fallback: Gram-Schmidt remove y,z via c only
+      var cc = vdot(C,C);
+      return cc>0 ? vadd(A, C, -vdot(A,C)/cc) : A.slice();
+    }
+    var s1 = (A[1]*C[2] - A[2]*C[1]) / det2;
+    var s2 = (B[1]*A[2] - B[2]*A[1]) / det2;
+    return vadd(vadd(A, B, -s1), C, -s2);
+  }
+
+  /* ── scene elements ── */
+  function drawGrid(sc, ox, oy){
+    var G = 6;
+    ctx.beginPath(); ctx.strokeStyle = "rgba(120,130,160,.12)"; ctx.lineWidth = 0.7;
+    for(var i=-G; i<=G; i++){
+      line3([i,-G,0],[i,G,0],sc,ox,oy);
+      line3([-G,i,0],[G,i,0],sc,ox,oy);
+    }
+    ctx.stroke();
+  }
+
+  function drawAxes(sc, ox, oy, dim){
+    var L = 5;
+    var xClr = dim ? "rgba(140,142,150,0.4)" : "#3498db";
+    var yClr = dim ? "rgba(140,142,150,0.4)" : "#e74c3c";
+    var zClr = dim ? "rgba(140,142,150,0.4)" : "#2ecc71";
+    ctx.lineWidth = 1.5; ctx.font = "bold 13px system-ui,sans-serif";
+    ctx.strokeStyle = xClr; ctx.fillStyle = xClr;
+    arrow3([0,0,0],[L,0,0],sc,ox,oy);
+    var px = scr([L+0.3,0,0],sc,ox,oy); ctx.fillText("x",px.x,px.y+4);
+    ctx.strokeStyle = yClr; ctx.fillStyle = yClr;
+    arrow3([0,0,0],[0,L,0],sc,ox,oy);
+    var py = scr([0,L+0.3,0],sc,ox,oy); ctx.fillText("y",py.x,py.y+4);
+    ctx.strokeStyle = zClr; ctx.fillStyle = zClr;
+    arrow3([0,0,0],[0,0,L],sc,ox,oy);
+    var pz = scr([0,0,L+0.3],sc,ox,oy); ctx.fillText("z",pz.x,pz.y+4);
+  }
+
+  function drawParallelepiped(a, b, c, alpha, sc, ox, oy, dim){
+    var O   = [0,0,0];
+    var AB  = vsum(a,b), AC  = vsum(a,c), BC  = vsum(b,c);
+    var ABC = vsum(AB,c);
+    var fa  = alpha.toFixed ? alpha : 1;
+
+    function rgba(r,g,bl,a){
+      if(dim) return "rgba(160,162,170,"+(a*fa*0.5)+")";
+      return "rgba("+r+","+g+","+bl+","+(a*fa)+")";
+    }
+
+    face3([O,a,AB,b],   rgba(241,196,15,0.10), sc,ox,oy);
+    face3([O,a,AC,c],   rgba(79,195,247,0.08), sc,ox,oy);
+    face3([O,b,BC,c],   rgba(239,154,154,0.08),sc,ox,oy);
+    face3([a,AB,ABC,AC],rgba(79,195,247,0.08), sc,ox,oy);
+    face3([b,AB,ABC,BC],rgba(239,154,154,0.08),sc,ox,oy);
+    face3([c,AC,ABC,BC],rgba(165,214,167,0.11),sc,ox,oy);
+
+    ctx.beginPath();
+    ctx.strokeStyle = dim
+      ? "rgba(140,142,150,"+(0.3*fa)+")"
+      : "rgba(200,210,235,"+(0.55*fa)+")";
+    ctx.lineWidth = 1.2;
+    [[O,a],[O,b],[O,c],
+     [a,AB],[a,AC],[b,AB],[b,BC],[c,AC],[c,BC],
+     [AB,ABC],[AC,ABC],[BC,ABC]
+    ].forEach(function(e){ line3(e[0],e[1],sc,ox,oy); });
+    ctx.stroke();
+
+    var aClr = dim ? "rgba(160,162,170,0.45)" : "#4fc3f7";
+    var bClr = dim ? "rgba(160,162,170,0.45)" : "#ef9a9a";
+    var cClr = dim ? "rgba(160,162,170,0.45)" : "#a5d6a7";
+    ctx.lineWidth = 2.8; ctx.font = "bold 14px system-ui,sans-serif";
+    var O2 = [0,0,0];
+    ctx.strokeStyle = aClr; ctx.fillStyle = aClr;
+    arrow3(O2, a, sc, ox, oy);
+    var pa = scr([a[0]/2,a[1]/2,a[2]/2],sc,ox,oy); ctx.fillText("a",pa.x-14,pa.y-4);
+
+    ctx.strokeStyle = bClr; ctx.fillStyle = bClr;
+    arrow3(O2, b, sc, ox, oy);
+    var pb = scr([b[0]/2,b[1]/2,b[2]/2],sc,ox,oy); ctx.fillText("b",pb.x-14,pb.y+6);
+
+    ctx.strokeStyle = cClr; ctx.fillStyle = cClr;
+    arrow3(O2, c, sc, ox, oy);
+    var pc = scr([c[0]/2,c[1]/2,c[2]/2],sc,ox,oy); ctx.fillText("c",pc.x+6,pc.y);
+
+    var pO = scr(O2,sc,ox,oy);
+    ctx.fillStyle = dim ? "rgba(160,162,170,0.4)" : "#f1c40f";
+    ctx.beginPath(); ctx.arc(pO.x,pO.y,4,0,Math.PI*2); ctx.fill();
+  }
+
+  /* ── resize ── */
+  function resize(){
+    cW = window.innerWidth; cH = window.innerHeight;
+    canvas.width = Math.round(cW * DPR); canvas.height = Math.round(cH * DPR);
+    canvas.style.width = cW + "px"; canvas.style.height = cH + "px";
+  }
+  window.addEventListener("resize", resize); resize();
+
+  /* ── 3d projections ── */
+  function drawProjections3D(a, b, c, sc, ox, oy){
+    var u, v, hv, hvLabel, uCol, vCol, hvCol;
+    if(expandBy==="a"){ u=b; v=c; hv=a; hvLabel="a"; uCol="#ef9a9a"; vCol="#a5d6a7"; hvCol="#4fc3f7"; }
+    else if(expandBy==="b"){ u=a; v=c; hv=b; hvLabel="b"; uCol="#4fc3f7"; vCol="#a5d6a7"; hvCol="#ef9a9a"; }
+    else { u=a; v=b; hv=c; hvLabel="c"; uCol="#4fc3f7"; vCol="#ef9a9a"; hvCol="#a5d6a7"; }
+    var projs = [
+      { id:"proj-yz", col:"#e74c3c", label:hvLabel+"ₓ",
+        bp:[0,u[1],u[2]], cp:[0,v[1],v[2]],
+        area: u[1]*v[2]-u[2]*v[1], axVal: hv[0], axVec:[hv[0],0,0] },
+      { id:"proj-xz", col:"#2ecc71", label:hvLabel+"ᵧ",
+        bp:[u[0],0,u[2]], cp:[v[0],0,v[2]],
+        area: u[0]*v[2]-u[2]*v[0], axVal: hv[1], axVec:[0,hv[1],0] },
+      { id:"proj-xy", col:"#3498db", label:hvLabel+"_z",
+        bp:[u[0],u[1],0], cp:[v[0],v[1],0],
+        area: u[0]*v[1]-u[1]*v[0], axVal: hv[2], axVec:[0,0,hv[2]] },
+    ];
+    projs.forEach(function(p){
+      if(!projEnabled[p.id]) return;
+      var O  = [0,0,0];
+      var bc = vsum(p.bp, p.cp);
+      var pos = p.area >= 0;
+
+      /* projected parallelogram */
+      face3([O,p.bp,bc,p.cp], pos?"rgba(255,255,255,0.07)":"rgba(255,80,80,0.07)", sc,ox,oy);
+      ctx.lineWidth=1.8;
+      ctx.strokeStyle=uCol; ctx.fillStyle=uCol;
+      arrow3(O,p.bp,sc,ox,oy); arrow3(p.cp,bc,sc,ox,oy);
+      ctx.strokeStyle=vCol; ctx.fillStyle=vCol;
+      arrow3(O,p.cp,sc,ox,oy); arrow3(p.bp,bc,sc,ox,oy);
+
+      /* dashed drop lines */
+      ctx.lineWidth=1; ctx.setLineDash([4,4]);
+      ctx.beginPath(); ctx.strokeStyle=uCol; line3(u, p.bp, sc, ox, oy); ctx.stroke();
+      ctx.beginPath(); ctx.strokeStyle=vCol; line3(v, p.cp, sc, ox, oy); ctx.stroke();
+      ctx.setLineDash([]);
+
+      /* height component arrow */
+      ctx.lineWidth=2; ctx.strokeStyle=hvCol; ctx.fillStyle=hvCol;
+      arrow3(O, p.axVec, sc, ox, oy);
+      var pav = scr(p.axVec, sc, ox, oy);
+      ctx.save(); ctx.font="bold 11px system-ui"; ctx.textAlign="center";
+      ctx.fillText(p.label+"="+p.axVal, pav.x, pav.y-8);
+      ctx.restore();
+
+      /* label at parallelogram center */
+      var mid3 = [(p.bp[0]+p.cp[0])/2, (p.bp[1]+p.cp[1])/2, (p.bp[2]+p.cp[2])/2];
+      var pm = scr(mid3, sc, ox, oy);
+      ctx.save(); ctx.font="bold 11px system-ui"; ctx.textAlign="center";
+      ctx.fillStyle=p.col;
+      ctx.fillText(p.label+"·("+p.area.toFixed(1)+")="+(p.axVal*p.area).toFixed(1), pm.x, pm.y-6);
+      ctx.restore();
+    });
+  }
+
+  function hexToRgb(hex){
+    var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+    return r+","+g+","+b;
+  }
+
+  /* ── loop ── */
+  var MINI_H = +(localStorage.getItem("para3d_mini_h") || 200);
+  var miniResizing = false, miniResize = {};
+  var swappedMini = null;   // null = normal, 0/1/2 = that proj panel is in main area
+  var miniSlotMap  = [0,1,2]; // maps mini slot → panel index (null = main parall.)
+
+  function getUVH(a, b, c){
+    if(expandBy==="a") return {u:b,v:c,hv:a,hvLabel:"a",uCol:"#ef9a9a",vCol:"#a5d6a7",hvCol:"#4fc3f7"};
+    if(expandBy==="b") return {u:a,v:c,hv:b,hvLabel:"b",uCol:"#4fc3f7",vCol:"#a5d6a7",hvCol:"#ef9a9a"};
+    return                    {u:a,v:b,hv:c,hvLabel:"c",uCol:"#4fc3f7",vCol:"#ef9a9a",hvCol:"#a5d6a7"};
+  }
+
+  function buildPanels(m){
+    var hvL=m.hvLabel, u=m.u, v=m.v, hv=m.hv;
+    return [
+      {id:"proj-yz",col:"#e74c3c",bp:[0,u[1],u[2]],cp:[0,v[1],v[2]],area:u[1]*v[2]-u[2]*v[1],axVal:hv[0],axVec:[hv[0],0,0],axLabel:hvL+"ₓ",title:hvL+"ₓ · S(yz)"},
+      {id:"proj-xz",col:"#2ecc71",bp:[u[0],0,u[2]],cp:[v[0],0,v[2]],area:u[0]*v[2]-u[2]*v[0],axVal:hv[1],axVec:[0,hv[1],0],axLabel:hvL+"ᵧ",title:hvL+"ᵧ · S(xz)"},
+      {id:"proj-xy",col:"#3498db",bp:[u[0],u[1],0],cp:[v[0],v[1],0],area:u[0]*v[1]-u[1]*v[0],axVal:hv[2],axVec:[0,0,hv[2]],axLabel:hvL+"_z",title:hvL+"_z · S(xy)"},
+    ];
+  }
+
+  /* draws one projection panel at (px0,py0) size (pw×ph) */
+  function drawOneProjPanel(p, m, px0, py0, pw, ph){
+    var sc2 = Math.min(pw,ph)*gScale/16;
+    var mid3=[(p.bp[0]+p.cp[0])/2,(p.bp[1]+p.cp[1])/2,(p.bp[2]+p.cp[2])/2];
+    var pm2=project(mid3);
+    var ox2=px0+pw/2-pm2[0]*sc2, oy2=py0+ph/2+pm2[1]*sc2;
+
+    ctx.save(); ctx.beginPath(); ctx.rect(px0,py0,pw,ph); ctx.clip();
+
+    var G=4; ctx.beginPath(); ctx.strokeStyle="rgba(120,130,160,0.09)"; ctx.lineWidth=0.6;
+    for(var i=-G;i<=G;i++){ line3([i,-G,0],[i,G,0],sc2,ox2,oy2); line3([-G,i,0],[G,i,0],sc2,ox2,oy2); }
+    ctx.stroke();
+
+    var L=3; ctx.lineWidth=1.2; ctx.font="10px system-ui";
+    ctx.strokeStyle="rgba(140,142,150,0.4)"; ctx.fillStyle="rgba(140,142,150,0.4)";
+    arrow3([0,0,0],[L,0,0],sc2,ox2,oy2); ctx.fillText("x",scr([L+0.3,0,0],sc2,ox2,oy2).x,scr([L+0.3,0,0],sc2,ox2,oy2).y+3);
+    arrow3([0,0,0],[0,L,0],sc2,ox2,oy2); ctx.fillText("y",scr([0,L+0.3,0],sc2,ox2,oy2).x,scr([0,L+0.3,0],sc2,ox2,oy2).y+3);
+    arrow3([0,0,0],[0,0,L],sc2,ox2,oy2); ctx.fillText("z",scr([0,0,L+0.3],sc2,ox2,oy2).x,scr([0,0,L+0.3],sc2,ox2,oy2).y+3);
+
+    var O=[0,0,0], bc=vsum(p.bp,p.cp), av=p.axVec;
+    var av_bp=vsum(av,p.bp), av_cp=vsum(av,p.cp), av_bc=vsum(av,bc);
+    var pos=p.area>=0, hvRgb=hexToRgb(m.hvCol);
+    face3([O,av,av_bp,p.bp],"rgba("+hvRgb+",0.05)",sc2,ox2,oy2);
+    face3([O,av,av_cp,p.cp],"rgba("+hvRgb+",0.05)",sc2,ox2,oy2);
+    face3([p.bp,av_bp,av_bc,bc],"rgba("+hvRgb+",0.05)",sc2,ox2,oy2);
+    face3([p.cp,av_cp,av_bc,bc],"rgba("+hvRgb+",0.05)",sc2,ox2,oy2);
+    face3([av,av_bp,av_bc,av_cp],"rgba("+hvRgb+",0.12)",sc2,ox2,oy2);
+    face3([O,p.bp,bc,p.cp],pos?"rgba(255,255,255,0.09)":"rgba(255,80,80,0.12)",sc2,ox2,oy2);
+    ctx.lineWidth=1; ctx.strokeStyle="rgba("+hvRgb+",0.35)"; ctx.setLineDash([3,3]);
+    ctx.beginPath(); line3(O,av,sc2,ox2,oy2); line3(p.bp,av_bp,sc2,ox2,oy2); line3(p.cp,av_cp,sc2,ox2,oy2); line3(bc,av_bc,sc2,ox2,oy2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.lineWidth=2; ctx.strokeStyle=m.uCol; ctx.fillStyle=m.uCol;
+    arrow3(O,p.bp,sc2,ox2,oy2); arrow3(p.cp,bc,sc2,ox2,oy2);
+    ctx.strokeStyle=m.vCol; ctx.fillStyle=m.vCol;
+    arrow3(O,p.cp,sc2,ox2,oy2); arrow3(p.bp,bc,sc2,ox2,oy2);
+    ctx.lineWidth=1.5; ctx.globalAlpha=0.55;
+    ctx.beginPath(); ctx.strokeStyle=m.uCol; line3(av,av_bp,sc2,ox2,oy2); line3(av_cp,av_bc,sc2,ox2,oy2); ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle=m.vCol; line3(av,av_cp,sc2,ox2,oy2); line3(av_bp,av_bc,sc2,ox2,oy2); ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.lineWidth=1; ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.strokeStyle=m.uCol; line3(m.u,p.bp,sc2,ox2,oy2); ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle=m.vCol; line3(m.v,p.cp,sc2,ox2,oy2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.lineWidth=2.5; ctx.strokeStyle=m.hvCol; ctx.fillStyle=m.hvCol;
+    arrow3(O,av,sc2,ox2,oy2);
+    var pav=scr(av,sc2,ox2,oy2);
+    ctx.save(); ctx.font="bold 10px system-ui"; ctx.textAlign="center";
+    ctx.fillText(p.axLabel+"="+p.axVal,pav.x,pav.y-7); ctx.restore();
+    ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.strokeStyle="rgba("+hexToRgb(m.uCol)+",0.4)"; line3(O,m.u,sc2,ox2,oy2); ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle="rgba("+hexToRgb(m.vCol)+",0.4)"; line3(O,m.v,sc2,ox2,oy2); ctx.stroke();
+
+    ctx.textAlign="center"; ctx.textBaseline="top";
+    ctx.font="bold 11px system-ui"; ctx.fillStyle=p.col;
+    ctx.fillText(p.title+" = "+p.axVal+"·("+p.area.toFixed(2)+") = "+(p.axVal*p.area).toFixed(2), px0+pw/2, py0+4);
+
+    ctx.restore();
+  }
+
+  /* draws the main parallelepiped scene in a mini slot */
+  function drawMiniMainScene(px0, py0, pw, ph){
+    var sc2=Math.min(pw,ph)*gScale/16;
+    var mid=[(A[0]+B[0]+C[0])/2,(A[1]+B[1]+C[1])/2,(A[2]+B[2]+C[2])/2];
+    var pm=project(mid);
+    var ox2=px0+pw/2-pm[0]*sc2, oy2=py0+ph/2+pm[1]*sc2;
+    ctx.save(); ctx.beginPath(); ctx.rect(px0,py0,pw,ph); ctx.clip();
+    var G=4; ctx.beginPath(); ctx.strokeStyle="rgba(120,130,160,0.09)"; ctx.lineWidth=0.6;
+    for(var i=-G;i<=G;i++){ line3([i,-G,0],[i,G,0],sc2,ox2,oy2); line3([-G,i,0],[G,i,0],sc2,ox2,oy2); }
+    ctx.stroke();
+    drawAxes(sc2,ox2,oy2,false);
+    var ta=document.getElementById("shear-ta").value/100;
+    var tb=document.getElementById("shear-tb").value/100;
+    var At=vlerp(A,shearAtoX(),ta), Bt=vlerp(B,shearBtoY(At),tb);
+    if(ta>0.01||tb>0.01) drawParallelepiped(A,B,C,0.35,sc2,ox2,oy2,false);
+    drawParallelepiped(At,Bt,C,1.0,sc2,ox2,oy2,false);
+    ctx.restore();
+  }
+
+  function drawMiniScenes(dW, H, a, b, c){
+    var mh=MINI_H, y0=H-mh, mw=Math.floor(dW/3);
+    var m=getUVH(a,b,c), panels=buildPanels(m);
+
+    ctx.fillStyle="#111318"; ctx.fillRect(0,y0,dW,mh);
+    ctx.strokeStyle="#252840"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(dW,y0); ctx.stroke();
+
+    /* build slot list: null=main-parall., 0/1/2=panel index */
+    var slots;
+    if(swappedMini!==null){
+      slots=[null];
+      panels.forEach(function(_,pi){ if(pi!==swappedMini) slots.push(pi); });
+    } else {
+      slots=[0,1,2];
+    }
+    miniSlotMap=slots;
+
+    slots.forEach(function(slot, si){
+      var px=si*mw;
+      if(si>0){ ctx.strokeStyle="#252840"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,y0); ctx.lineTo(px,H); ctx.stroke(); }
+      if(slot===null){
+        drawMiniMainScene(px,y0,mw,mh);
+      } else {
+        drawOneProjPanel(panels[slot],m,px,y0,mw,mh);
+      }
+    });
+
+    /* draw eye icons OUTSIDE any clip region so all three are always visible */
+    ctx.globalAlpha = 1;
+    ctx.setLineDash([]);
+    slots.forEach(function(slot, si){
+      var ex = (si+1)*mw - 20, ey = y0 + 20;
+      var eyeActive = (slot!==null && swappedMini===slot);
+      var col = eyeActive ? "#ffd700" : "#c8cdd8";
+      ctx.beginPath();
+      ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.globalAlpha = 1;
+      ctx.arc(ex, ey, 13, 0, Math.PI*2); ctx.stroke();
+      ctx.beginPath();
+      ctx.fillStyle = col;
+      ctx.arc(ex, ey, 6, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  canvas.addEventListener("click", function(e){
+    if(!projVisible || miniResizing) return;
+    var H = cH, dW = cW - SBW;
+    var y0 = H - MINI_H;
+    if(e.clientY < y0 || e.clientY > y0+30 || e.clientX >= dW) return;
+    var si = Math.max(0, Math.min(2, Math.floor(e.clientX / Math.floor(dW/3))));
+    swappedMini = miniSlotMap[si]; // null → show main, 0/1/2 → show that projection
+  });
+
+  function tick(){
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    var W = cW, H = cH;
+    var dW = W - SBW;
+    var sceneH = projVisible ? H - MINI_H : H;
+    var sc = Math.min(dW, sceneH) * gScale / 14;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = "#1a1d23"; ctx.fillRect(0,0,W,H);
+
+    if(projVisible && swappedMini !== null){
+      /* swapped: draw the selected projection panel in the main area */
+      ctx.fillStyle = "#111318"; ctx.fillRect(0, 0, dW, sceneH);
+      var m = getUVH(A,B,C), panels = buildPanels(m);
+      drawOneProjPanel(panels[swappedMini], m, 0, 0, dW, sceneH);
+    } else {
+      /* normal: parallelepiped in main area */
+      var ox = dW/2, oy = sceneH/2;
+      var mid = [(A[0]+B[0]+C[0])/2,(A[1]+B[1]+C[1])/2,(A[2]+B[2]+C[2])/2];
+      var pm  = project(mid);
+      ox -= pm[0]*sc; oy += pm[1]*sc;
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0,0,dW,sceneH); ctx.clip();
+
+      var ta = document.getElementById("shear-ta").value / 100;
+      var tb = document.getElementById("shear-tb").value / 100;
+      var At = vlerp(A, shearAtoX(), ta);
+      var Bt = vlerp(B, shearBtoY(At), tb);
+
+      drawGrid(sc, ox, oy);
+      drawAxes(sc, ox, oy, projVisible);
+      if(ta > 0.01 || tb > 0.01)
+        drawParallelepiped(A, B, C, 0.35, sc, ox, oy, projVisible);
+      drawParallelepiped(At, Bt, C, projVisible ? 0.35 : 1.0, sc, ox, oy, projVisible);
+
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ctx.font = "bold 14px system-ui,sans-serif"; ctx.fillStyle = "#a5c8ff";
+      ctx.fillText("Параллелепипед на a, b, c", dW/2, 10);
+      ctx.font = "12px system-ui,sans-serif"; ctx.fillStyle = "#556";
+      ctx.fillText("объём = |det(a,b,c)|", dW/2, 28);
+      ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+
+      ctx.restore();
+
+      if(projVisible) drawProjections3D(A, B, C, sc, ox, oy);
+    }
+
+    if(projVisible) drawMiniScenes(dW, H, A, B, C);
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

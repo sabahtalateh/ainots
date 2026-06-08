@@ -1,3 +1,4 @@
 {
-    "liveServer.settings.multiRootWorkspaceName": "ainots"
+    "liveServer.settings.multiRootWorkspaceName": "ainots",
+    "cSpell.words": ["katex", "textcolor", "pmatrix", "pmatrix", "displayMode", "throwOnError", "beginPath", "closePath", "lineWidth", "fillStyle", "strokeStyle", "fillText", "clearRect", "moveTo", "lineTo", "atan2", "devicePixelRatio", "offsetWidth", "insertBefore", "appendChild", "dispatchEvent", "backdropFilter", "webkitBackdropFilter", "infty"]
 }

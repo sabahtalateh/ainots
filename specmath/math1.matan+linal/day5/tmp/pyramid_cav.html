@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<title>Объём пирамиды — принцип Кавальери</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#1a1d23;color:#ddd;font-family:system-ui,sans-serif;}
+  canvas{display:block;}
+  #ctrl{
+    position:absolute;top:0;right:0;bottom:0;width:240px;
+    background:rgba(14,16,22,0.97);border-left:1px solid #252840;
+    padding:14px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;font-size:12px;user-select:none;
+  }
+  h3{margin:0 0 2px;font-size:13px;color:#a5c8ff;}
+  .sl{display:flex;flex-direction:column;gap:2px;color:#aaa;}
+  .sl input{accent-color:#4fc3f7;cursor:pointer;}
+  .val{color:#4fc3f7;font-weight:bold;}
+  hr{border:none;border-top:1px solid #252840;margin:2px 0;}
+  #formula{background:#0d0f18;border:1px solid #252840;border-radius:6px;padding:10px;font-size:12px;line-height:2;}
+  #formula b{color:#ffe066;}
+  #hint{font-size:11px;color:#445;margin-top:auto;line-height:1.8;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ctrl">
+  <h3>Пирамида</h3>
+
+  <div class="sl">
+    Граней основания: <span class="val" id="nv">5</span>
+    <input type="range" id="n-sl" min="3" max="8" value="5" step="1">
+  </div>
+  <div class="sl">
+    Радиус основания r = <span class="val" id="rv">2.0</span>
+    <input type="range" id="r-sl" min="5" max="30" value="20">
+  </div>
+  <div class="sl">
+    Высота h = <span class="val" id="hv">3.0</span>
+    <input type="range" id="h-sl" min="5" max="50" value="30">
+  </div>
+
+  <hr>
+  <div style="color:#a5c8ff;font-size:11px;margin-bottom:-4px;">Наклон апекса</div>
+  <div class="sl">
+    сдвиг X = <span class="val" id="axv">0.0</span>
+    <input type="range" id="ax-sl" min="-20" max="20" value="0">
+  </div>
+  <div class="sl">
+    сдвиг Y = <span class="val" id="ayv">0.0</span>
+    <input type="range" id="ay-sl" min="-20" max="20" value="0">
+  </div>
+
+  <hr>
+  <div class="sl">
+    Срез z = <span class="val" id="zv">50</span>% · h
+    <input type="range" id="z-sl" min="0" max="99" value="50">
+  </div>
+
+  <hr>
+  <div id="formula">
+    S осн = <b id="fS">?</b><br>
+    h = <b id="fH">?</b><br>
+    V = ⅓·S·h = <b id="fV">?</b><br>
+    <hr style="margin:4px 0;border-color:#1a2030;">
+    z = <b id="fz">?</b> · h<br>
+    S(z) = S·(z/h)² = <b id="fSz">?</b>
+  </div>
+
+  <div id="hint">Тяни — вращение<br>Колёсико — зум<br><br>
+    <span style="color:#556;">Двигай «Наклон апекса» —<br>V не меняется!</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var DPR = window.devicePixelRatio||1;
+  var canvas = document.getElementById('c');
+  var ctx = canvas.getContext('2d');
+  var SBW=240, cW=0, cH=0;
+  var gFaces=[], gEdges=[], gLabels=[];
+
+  // params
+  var pN=5, pR=2.0, pH=3.0, pAX=0, pAY=0, pZ=0.5;
+
+  function bind(id, cb){
+    var el=document.getElementById(id);
+    el.addEventListener('input', function(){ cb(+this.value); });
+  }
+  bind('n-sl',  function(v){ pN=v; document.getElementById('nv').textContent=v; });
+  bind('r-sl',  function(v){ pR=v/10; document.getElementById('rv').textContent=pR.toFixed(1); });
+  bind('h-sl',  function(v){ pH=v/10; document.getElementById('hv').textContent=pH.toFixed(1); });
+  bind('ax-sl', function(v){ pAX=v/10; document.getElementById('axv').textContent=pAX.toFixed(1); });
+  bind('ay-sl', function(v){ pAY=v/10; document.getElementById('ayv').textContent=pAY.toFixed(1); });
+  bind('z-sl',  function(v){ pZ=v/100; document.getElementById('zv').textContent=v; });
+
+  // camera
+  var cam={theta:0.7,phi:0.52};
+  var gScale=1.0;
+  var drag={active:false,x:0,y:0};
+  window.addEventListener('mousedown',function(e){ if(e.target.closest('#ctrl')) return; drag.active=true; drag.x=e.clientX; drag.y=e.clientY; });
+  window.addEventListener('mouseup',  function(){ drag.active=false; });
+  window.addEventListener('mousemove',function(e){
+    if(!drag.active) return;
+    cam.theta-=(e.clientX-drag.x)*0.007; cam.phi-=(e.clientY-drag.y)*0.007;
+    cam.phi=Math.max(0.05,Math.min(Math.PI/2-0.03,cam.phi));
+    drag.x=e.clientX; drag.y=e.clientY;
+  });
+  window.addEventListener('wheel',function(e){ gScale=Math.max(0.3,Math.min(4,gScale-e.deltaY*0.001)); },{passive:true});
+
+  function project(p){
+    var ct=Math.cos(cam.theta),st=Math.sin(cam.theta),cp=Math.cos(cam.phi),sp=Math.sin(cam.phi);
+    var rx=ct*p[0]+st*p[1], ry=-st*p[0]+ct*p[1];
+    return [rx,-sp*ry+cp*p[2]];
+  }
+  function scr(p3,sc,ox,oy){ var p=project(p3); return{x:ox+p[0]*sc,y:oy-p[1]*sc}; }
+  function line3(p,q,sc,ox,oy){ var a=scr(p,sc,ox,oy),b=scr(q,sc,ox,oy); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); }
+  function dpt(p){ var ct=Math.cos(cam.theta),st=Math.sin(cam.theta),cp=Math.cos(cam.phi),sp=Math.sin(cam.phi); return cp*(-st*p[0]+ct*p[1])+sp*p[2]; }
+  function avgDpt(pts){ var d=0; pts.forEach(function(p){d+=dpt(p);}); return d/pts.length; }
+
+  function face3(pts,col,alpha){ gFaces.push({pts:pts.slice(),color:col,alpha:alpha,depth:avgDpt(pts)}); }
+  function edge3(pairs,col,lw,dash){ var pts=[]; pairs.forEach(function(e){pts.push(e[0],e[1]);}); gEdges.push({pairs:pairs,color:col,lw:lw,dash:dash||[],depth:avgDpt(pts)}); }
+  function label3d(pt,text,col,size){ gLabels.push({pt:pt.slice(),text:text,col:col,size:size||12,depth:dpt(pt)}); }
+
+  function flushScene(sc,ox,oy){
+    gFaces.sort(function(a,b){return a.depth-b.depth;});
+    gFaces.forEach(function(f){
+      var ps=f.pts.map(function(p){return scr(p,sc,ox,oy);});
+      ctx.beginPath(); ctx.moveTo(ps[0].x,ps[0].y);
+      for(var i=1;i<ps.length;i++) ctx.lineTo(ps[i].x,ps[i].y);
+      ctx.closePath(); ctx.globalAlpha=f.alpha; ctx.fillStyle=f.color; ctx.fill(); ctx.globalAlpha=1;
+    });
+    gFaces.length=0;
+    gEdges.sort(function(a,b){return a.depth-b.depth;});
+    gEdges.forEach(function(g){
+      ctx.setLineDash(g.dash); ctx.beginPath(); ctx.strokeStyle=g.color; ctx.lineWidth=g.lw;
+      g.pairs.forEach(function(e){line3(e[0],e[1],sc,ox,oy);}); ctx.stroke();
+    });
+    ctx.setLineDash([]); gEdges.length=0;
+    gLabels.sort(function(a,b){return a.depth-b.depth;});
+    gLabels.forEach(function(l){
+      var p=scr(l.pt,sc,ox,oy);
+      ctx.save(); ctx.font='bold '+l.size+'px system-ui,sans-serif';
+      ctx.fillStyle=l.col; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(l.text,p.x,p.y); ctx.restore();
+    });
+    gLabels.length=0;
+  }
+
+  function baseVerts(n,r){
+    var v=[];
+    for(var i=0;i<n;i++){
+      var a=2*Math.PI*i/n - Math.PI/2;
+      v.push([r*Math.cos(a), r*Math.sin(a), 0]);
+    }
+    return v;
+  }
+
+  function polyArea(n,r){ return 0.5*n*r*r*Math.sin(2*Math.PI/n); }
+
+  function drawScene(){
+    var n=pN, r=pR, h=pH, ax=pAX, ay=pAY, z=pZ*pH;
+    var apex=[ax, ay, h];
+    var base=baseVerts(n,r);
+
+    // pyramid fill (semi-transparent blue)
+    var fc='rgba(79,155,220,1)', fa=0.18, ec='rgba(100,170,255,0.7)';
+    // base polygon (fan from 0)
+    for(var i=1;i<n-1;i++) face3([base[0],base[i],base[i+1]], fc, fa);
+    edge3(base.map(function(v,i){return[v,base[(i+1)%n]];}), ec, 1.2);
+    // side faces
+    for(var i=0;i<n;i++) face3([apex,base[i],base[(i+1)%n]], fc, fa);
+    edge3(base.map(function(v){return[apex,v];}), ec, 1.2);
+
+    // cutting plane (faint horizontal square)
+    var pw=r*2.2;
+    var cp=[[-pw,-pw,z],[pw,-pw,z],[pw,pw,z],[-pw,pw,z]];
+    face3(cp,'rgba(255,230,80,0.05)',0.05);
+    edge3([[cp[0],cp[1]],[cp[1],cp[2]],[cp[2],cp[3]],[cp[3],cp[0]]],'rgba(255,230,80,0.18)',0.8,[4,4]);
+
+    // cross-section
+    var s=(h-z)/h;  // scale from base (0=apex,1=base)
+    var cut=base.map(function(v){
+      return [ax+s*(v[0]-ax), ay+s*(v[1]-ay), z];
+    });
+    var yc='rgba(255,220,60,1)';
+    for(var i=1;i<n-1;i++) face3([cut[0],cut[i],cut[i+1]], yc, 0.55);
+    edge3(cut.map(function(v,i){return[v,cut[(i+1)%n]];}), yc, 2.2);
+
+    // h axis dashed
+    edge3([[[0,0,0],[0,0,h]]],'rgba(255,255,255,0.12)',0.8,[3,4]);
+
+    // labels
+    label3d([0,0,-0.3],'основание','rgba(100,170,255,0.8)',11);
+    label3d([ax,ay,h+0.3],'апекс','rgba(200,200,200,0.7)',11);
+
+    // formula display
+    var S=polyArea(n,r);
+    var V=S*h/3;
+    var Sz=S*s*s;
+    document.getElementById('fS').textContent = S.toFixed(3);
+    document.getElementById('fH').textContent = h.toFixed(2);
+    document.getElementById('fV').textContent = V.toFixed(3);
+    document.getElementById('fz').textContent = pZ.toFixed(2);
+    document.getElementById('fSz').textContent = Sz.toFixed(3);
+  }
+
+  function resize(){
+    cW=window.innerWidth; cH=window.innerHeight;
+    canvas.width=Math.round(cW*DPR); canvas.height=Math.round(cH*DPR);
+    canvas.style.width=cW+'px'; canvas.style.height=cH+'px';
+  }
+  window.addEventListener('resize',resize); resize();
+
+  function tick(){
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    var W=cW,H=cH,dW=W-SBW;
+    var sc=Math.min(dW,H)*gScale/12;
+    var cx=pAX/2, cy=pAY/2, cz=pH/2;
+    var pc=project([cx,cy,cz]);
+    var ox=dW/2-pc[0]*sc, oy=H/2+pc[1]*sc;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#1a1d23'; ctx.fillRect(0,0,W,H);
+    ctx.save(); ctx.beginPath(); ctx.rect(0,0,dW,H); ctx.clip();
+
+    gFaces=[]; gEdges=[]; gLabels=[];
+    drawScene();
+    flushScene(sc,ox,oy);
+    ctx.restore();
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

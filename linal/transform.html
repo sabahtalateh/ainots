@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" onload="renderFormula()"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; overflow: hidden; display: flex; height: 100vh; }
+  #panels { flex: 1; display: flex; }
+  .panel { position: relative; flex: 1; overflow: hidden; }
+  #panel-right { border-left: 2px solid #444; }
+  canvas { display: block; cursor: grab; }
+  canvas.dragging { cursor: grabbing; }
+
+  #sidebar {
+    width: 280px; min-width: 280px;
+    background: rgba(0,0,0,0.3);
+    border-left: 4px solid #333;
+    display: flex; flex-direction: column;
+    padding: 20px 16px; gap: 16px;
+    overflow-y: auto;
+  }
+  .sidebar-title { color: #666; font-size: 11px; font-family: serif; letter-spacing: 1px; text-transform: uppercase; }
+  .vec-row { display: flex; align-items: center; gap: 8px; font-size: 14px; font-family: serif; color: #ccc; flex-wrap: wrap; }
+  .mat-wrap { display: flex; align-items: stretch; gap: 2px; }
+  .mat-bracket { width: 6px; border-top: 2px solid #666; border-bottom: 2px solid #666; }
+  .mat-bracket.left  { border-left:  2px solid #666; border-radius: 2px 0 0 2px; }
+  .mat-bracket.right { border-right: 2px solid #666; border-radius: 0 2px 2px 0; }
+  .mat-cells { display: flex; flex-direction: column; gap: 3px; padding: 3px 2px; }
+  .mat-cell { display: flex; align-items: center; gap: 2px; }
+  input.mat-in {
+    width: 36px; background: transparent; border: none;
+    border-bottom: 1px solid #444; color: inherit;
+    font-size: 14px; font-family: serif; text-align: center;
+    outline: none; padding: 1px 2px; -moz-appearance: textfield;
+  }
+  input.mat-in::-webkit-outer-spin-button,
+  input.mat-in::-webkit-inner-spin-button { -webkit-appearance: none; }
+  input.mat-in:focus { border-bottom-color: #888; }
+  .spin-btns { display: flex; flex-direction: column; gap: 1px; }
+  .spin-btn {
+    width: 13px; height: 11px; font-size: 8px; line-height: 1;
+    background: rgba(255,255,255,0.07); color: #777;
+    border: 1px solid #3a3a3a; border-radius: 2px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    user-select: none;
+  }
+  .spin-btn:hover { background: rgba(255,255,255,0.16); color: #bbb; }
+  .divider { border-top: 1px solid #2a2a2a; margin: 2px 0; }
+
+  .mem-row { display: flex; align-items: center; gap: 6px; }
+  .mem-num { color: #3a3a3a; font-size: 11px; font-family: monospace; width: 10px; text-align: right; flex-shrink: 0; }
+  .mem-canvas { width: 56px; height: 56px; flex-shrink: 0; border-radius: 3px; background: #0c0c0c; display: block; }
+  .mem-btns { display: flex; flex-direction: column; gap: 4px; }
+  .mem-btn {
+    width: 22px; height: 22px;
+    background: rgba(255,255,255,0.05); color: #555;
+    border: 1px solid #2e2e2e; border-radius: 3px;
+    cursor: pointer; font-size: 10px; font-family: monospace; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none; line-height: 1;
+  }
+  .mem-btn:hover { background: rgba(255,255,255,0.12); color: #aaa; }
+  .mem-btn.w-btn:hover { color: #e05c3a; border-color: rgba(224,92,58,0.35); }
+  .mem-btn.r-btn:hover { color: #a0ff80; border-color: rgba(160,255,128,0.35); }
+  .mem-btn.c-btn:hover { color: #888; border-color: rgba(128,128,128,0.35); }
+  .mem-btn:disabled { opacity: 0.25; cursor: default; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div id="panels">
+  <div class="panel" id="panel-left">
+    <canvas id="c-left"></canvas>
+  </div>
+  <div class="panel" id="panel-right">
+    <canvas id="c-right"></canvas>
+  </div>
+</div>
+
+<div id="sidebar">
+  <div class="sidebar-title">transformation — new basis</div>
+  <div class="vec-row">
+    <span style="color:#e05c3a;">t⃗₁</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="t1x" type="number" value="1" style="color:#e05c3a;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t1x" data-d="1">▲</div><div class="spin-btn" data-id="t1x" data-d="-1">▼</div></div>
+          <span id="lh-t1x" style="display:none; color:#f0c060; font-size:10px; font-family:serif; margin-left:1px;"></span>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="t1y" type="number" value="0" style="color:#e05c3a;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t1y" data-d="1">▲</div><div class="spin-btn" data-id="t1y" data-d="-1">▼</div></div>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+
+    <span style="color:#5ca8e0;">t⃗₂</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="t2x" type="number" value="0" style="color:#5ca8e0;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t2x" data-d="1">▲</div><div class="spin-btn" data-id="t2x" data-d="-1">▼</div></div>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="t2y" type="number" value="1" style="color:#5ca8e0;">
+          <div class="spin-btns"><div class="spin-btn" data-id="t2y" data-d="1">▲</div><div class="spin-btn" data-id="t2y" data-d="-1">▼</div></div>
+          <span id="lh-t2y" style="display:none; color:#f0c060; font-size:10px; font-family:serif; margin-left:1px;"></span>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+  </div>
+
+  <div class="vec-row" style="margin-top:4px; gap:6px;">
+    <span style="color:#f0c060; font-style:italic; font-size:15px; font-family:serif; width:14px; text-align:center;">λ</span>
+    <span style="color:#444; font-size:12px;">=</span>
+    <input class="mat-in" id="lam" type="number" value="0" style="color:#f0c060; width:44px;">
+    <div class="spin-btns"><div class="spin-btn" data-id="lam" data-d="1">▲</div><div class="spin-btn" data-id="lam" data-d="-1">▼</div></div>
+    <span style="color:#3d3d3d; font-size:10px; font-family:sans-serif;">subtract from diag.</span>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">vector a</div>
+  <div class="vec-row">
+    <span style="color:#a0ff80;">a⃗</span>
+    <div class="mat-wrap">
+      <div class="mat-bracket left"></div>
+      <div class="mat-cells">
+        <div class="mat-cell">
+          <input class="mat-in" id="ax" type="number" value="1" style="color:#a0ff80;">
+          <div class="spin-btns"><div class="spin-btn" data-id="ax" data-d="1">▲</div><div class="spin-btn" data-id="ax" data-d="-1">▼</div></div>
+        </div>
+        <div class="mat-cell">
+          <input class="mat-in" id="ay" type="number" value="1" style="color:#a0ff80;">
+          <div class="spin-btns"><div class="spin-btn" data-id="ay" data-d="1">▲</div><div class="spin-btn" data-id="ay" data-d="-1">▼</div></div>
+        </div>
+      </div>
+      <div class="mat-bracket right"></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">(T − λI) · a</div>
+  <div id="t-formula" style="padding: 4px 0; color:#aaa;"></div>
+
+  <div class="divider"></div>
+  <div class="sidebar-title">memory</div>
+  <div id="mem-slots" style="display:flex; flex-direction:column; gap:8px;"></div>
+</div>
+
+<script>
+const dpr = window.devicePixelRatio || 1;
+let scale = 60, panX = 0, panY = 0, lam = 0;
+
+const _s = JSON.parse(localStorage.getItem('transform_state') || 'null');
+const T1 = _s ? { x: _s.t1x, y: _s.t1y } : { x: 1, y: 0 };
+const T2 = _s ? { x: _s.t2x, y: _s.t2y } : { x: 0, y: 1 };
+const A  = _s ? { x: _s.ax,  y: _s.ay  } : { x: 1, y: 1 };
+if (_s) { scale = _s.scale ?? 60; panX = _s.panX ?? 0; panY = _s.panY ?? 0; lam = _s.lam ?? 0; }
+
+const anim = { t1x: T1.x, t1y: T1.y, t2x: T2.x, t2y: T2.y, ax: A.x, ay: A.y, lam };
+let animId = null;
+
+function startAnim() {
+  if (!animId) animId = requestAnimationFrame(animStep);
+}
+function animStep() {
+  const sp = 0.14;
+  const tgt = { t1x: T1.x, t1y: T1.y, t2x: T2.x, t2y: T2.y, ax: A.x, ay: A.y, lam };
+  let moving = false;
+  for (const k in tgt) {
+    const d = tgt[k] - anim[k];
+    if (Math.abs(d) > 0.0005) { anim[k] += d * sp; moving = true; }
+    else anim[k] = tgt[k];
+  }
+  scenes.forEach(s => s.draw());
+  animId = moving ? requestAnimationFrame(animStep) : null;
+}
+
+function fmtN(v) {
+  if (Number.isInteger(v)) return String(v);
+  return v.toFixed(2).replace(/\.?0+$/, '');
+}
+
+function renderFormula() {
+  const el = document.getElementById('t-formula');
+  if (!el || !window.katex) return;
+  const r = s => `\\textcolor{#e05c3a}{${s}}`;
+  const b = s => `\\textcolor{#5ca8e0}{${s}}`;
+  const g = s => `\\textcolor{#a0ff80}{${s}}`;
+  const y = s => `\\textcolor{#f0c060}{${s}}`;
+  // effective matrix: subtract lambda from diagonal
+  const e11 = T1.x - lam, e21 = T1.y;
+  const e12 = T2.x,       e22 = T2.y - lam;
+  const tax = A.x * e11 + A.y * e12;
+  const tay = A.x * e21 + A.y * e22;
+  function diagEl(orig, colFn) {
+    if (lam === 0) return colFn(fmtN(orig));
+    const lamStr = lam < 0 ? `+${fmtN(-lam)}` : `-${fmtN(lam)}`;
+    return `${colFn(fmtN(orig))}${y(lamStr)}`;
+  }
+  function term(t, a, color) {
+    const ts = t < 0 ? `(${fmtN(t)})` : fmtN(t);
+    return `${color(ts)}\\cdot ${g(fmtN(a))}`;
+  }
+  const tex =
+    `\\begin{aligned}`+
+    `&\\begin{pmatrix}${diagEl(T1.x,r)}&${b(fmtN(e12))}\\\\${r(fmtN(e21))}&${diagEl(T2.y,b)}\\end{pmatrix}`+
+    `\\begin{pmatrix}${g(fmtN(A.x))}\\\\${g(fmtN(A.y))}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${term(e11,A.x,r)}+${term(e12,A.y,b)}\\\\${term(e21,A.x,r)}+${term(e22,A.y,b)}\\end{pmatrix}\\\\[6pt]`+
+    `&=\\begin{pmatrix}${g(fmtN(tax))}\\\\${g(fmtN(tay))}\\end{pmatrix}`+
+    `\\end{aligned}`;
+  katex.render(tex, el, { throwOnError: false, displayMode: false });
+}
+
+function saveState() {
+  localStorage.setItem('transform_state', JSON.stringify({
+    t1x: T1.x, t1y: T1.y, t2x: T2.x, t2y: T2.y,
+    ax: A.x, ay: A.y, scale, panX, panY, lam
+  }));
+}
+
+const scenes = [];
+
+function makeScene(canvasId, panelId, drawExtra) {
+  const canvas = document.getElementById(canvasId);
+  const panel  = document.getElementById(panelId);
+  const ctx    = canvas.getContext('2d');
+  let W, H, cx, cy;
+
+  function toScreen(x, y) { return [cx + x * scale + panX, cy - y * scale + panY]; }
+
+  function drawGrid() {
+    ctx.strokeStyle = '#2a2a2a'; ctx.lineWidth = 1;
+    const xMin = Math.floor((-cx - panX) / scale) - 1;
+    const xMax = Math.ceil((W - cx - panX) / scale) + 1;
+    const yMin = Math.floor((cy + panY - H) / scale) - 1;
+    const yMax = Math.ceil((cy + panY) / scale) + 1;
+    for (let i = xMin; i <= xMax; i++) {
+      const [x] = toScreen(i, 0);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+    for (let i = yMin; i <= yMax; i++) {
+      const [, y] = toScreen(0, i);
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+  }
+
+  function drawAxes() {
+    const [ox, oy] = toScreen(0, 0);
+    ctx.strokeStyle = '#555'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke();
+    ctx.fillStyle = '#555'; ctx.font = '12px sans-serif';
+    const xMin = Math.floor((-cx - panX) / scale) - 1;
+    const xMax = Math.ceil((W - cx - panX) / scale) + 1;
+    const yMin = Math.floor((cy + panY - H) / scale) - 1;
+    const yMax = Math.ceil((cy + panY) / scale) + 1;
+    ctx.textAlign = 'center';
+    for (let i = xMin; i <= xMax; i++) {
+      if (!i) continue;
+      const [x] = toScreen(i, 0); ctx.fillText(i, x, oy + 16);
+    }
+    ctx.textAlign = 'right';
+    for (let i = yMin; i <= yMax; i++) {
+      if (!i) continue;
+      const [, y] = toScreen(0, i); ctx.fillText(i, ox - 6, y + 4);
+    }
+  }
+
+  function arrow(x1, y1, x2, y2, color) {
+    const [sx1, sy1] = toScreen(x1, y1), [sx2, sy2] = toScreen(x2, y2);
+    if (Math.hypot(sx2-sx1, sy2-sy1) < 1) {
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(sx2, sy2, 4, 0, Math.PI * 2); ctx.fill();
+      return;
+    }
+    const a = Math.atan2(sy2-sy1, sx2-sx1), hl = 12;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(sx1, sy1); ctx.lineTo(sx2, sy2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sx2, sy2);
+    ctx.lineTo(sx2 - hl*Math.cos(a-0.4), sy2 - hl*Math.sin(a-0.4));
+    ctx.lineTo(sx2 - hl*Math.cos(a+0.4), sy2 - hl*Math.sin(a+0.4));
+    ctx.closePath(); ctx.fill();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawGrid();
+    drawAxes();
+    drawExtra({ ctx, arrow, toScreen, W, H });
+  }
+
+  function resize() {
+    const sidebar = document.getElementById('sidebar');
+    W = Math.floor((window.innerWidth - sidebar.offsetWidth) / 2);
+    H = window.innerHeight;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+    cx = W / 2; cy = H / 2;
+    draw();
+  }
+
+  scenes.push({ draw, resize });
+  window.addEventListener('resize', resize);
+  resize();
+}
+
+// Left: standard ij basis + vector a
+makeScene('c-left', 'panel-left', ({ ctx, arrow, toScreen }) => {
+  arrow(0, 0, 1, 0, '#e05c3a');
+  arrow(0, 0, 0, 1, '#5ca8e0');
+  const [ix, iy] = toScreen(1, 0);
+  const [jx, jy] = toScreen(0, 1);
+  ctx.font = '14px serif';
+  ctx.fillStyle = '#e05c3a'; ctx.textAlign = 'left';  ctx.fillText('î', ix + 8, iy + 5);
+  ctx.fillStyle = '#5ca8e0'; ctx.textAlign = 'center'; ctx.fillText('ĵ', jx, jy - 8);
+
+  arrow(0, 0, anim.ax, anim.ay, '#a0ff80');
+  const [ax, ay] = toScreen(anim.ax, anim.ay);
+  ctx.fillStyle = '#a0ff80'; ctx.textAlign = 'left';
+  ctx.fillText('a⃗', ax + 8, ay + 5);
+});
+
+// Right: (T − λI) transformed basis
+makeScene('c-right', 'panel-right', ({ ctx, arrow, toScreen, W, H }) => {
+  // effective columns after subtracting λ from diagonal
+  const e1x = anim.t1x - anim.lam, e1y = anim.t1y;
+  const e2x = anim.t2x,            e2y = anim.t2y - anim.lam;
+
+  // transformed grid
+  const rng = 20;
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(224,92,58,0.3)';
+  for (let n = -rng; n <= rng; n++) {
+    const [x1,y1] = toScreen(n*e1x - rng*e2x, n*e1y - rng*e2y);
+    const [x2,y2] = toScreen(n*e1x + rng*e2x, n*e1y + rng*e2y);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(92,168,224,0.3)';
+  for (let n = -rng; n <= rng; n++) {
+    const [x1,y1] = toScreen(n*e2x - rng*e1x, n*e2y - rng*e1y);
+    const [x2,y2] = toScreen(n*e2x + rng*e1x, n*e2y + rng*e1y);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  }
+  // basis vectors
+  arrow(0, 0, e1x, e1y, '#e05c3a');
+  arrow(0, 0, e2x, e2y, '#5ca8e0');
+  const [t1sx, t1sy] = toScreen(e1x, e1y);
+  const [t2sx, t2sy] = toScreen(e2x, e2y);
+  ctx.font = '14px serif';
+  ctx.fillStyle = '#e05c3a'; ctx.textAlign = 'left';  ctx.fillText('t⃗₁', t1sx + 8, t1sy + 5);
+  ctx.fillStyle = '#5ca8e0'; ctx.textAlign = 'left';  ctx.fillText('t⃗₂', t2sx + 8, t2sy + 5);
+
+  // (T − λI)·a
+  const tax = anim.ax*e1x + anim.ay*e2x;
+  const tay = anim.ax*e1y + anim.ay*e2y;
+  arrow(0, 0, tax, tay, '#a0ff80');
+  const [tasx, tasy] = toScreen(tax, tay);
+  ctx.fillStyle = '#a0ff80'; ctx.textAlign = 'left';
+  ctx.fillText('a⃗', tasx + 8, tasy + 5);
+});
+
+// inputs
+['t1x','t1y','t2x','t2y','ax','ay'].forEach(id => {
+  const inp = document.getElementById(id);
+  const map = { t1x: [T1,'x'], t1y: [T1,'y'], t2x: [T2,'x'], t2y: [T2,'y'], ax: [A,'x'], ay: [A,'y'] };
+  inp.value = map[id][0][map[id][1]];
+  inp.addEventListener('input', e => {
+    const v = parseFloat(e.target.value) || 0;
+    map[id][0][map[id][1]] = v;
+    startAnim();
+    renderFormula();
+    saveState();
+  });
+});
+
+function updateLamHints() {
+  ['t1x', 't2y'].forEach(id => {
+    const el = document.getElementById('lh-' + id);
+    if (!el) return;
+    if (lam === 0) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    el.textContent = lam < 0 ? `(+${fmtN(-lam)})` : `(-${fmtN(lam)})`;
+  });
+}
+
+{
+  const lamInp = document.getElementById('lam');
+  lamInp.value = lam;
+  updateLamHints();
+  lamInp.addEventListener('input', e => {
+    lam = parseFloat(e.target.value) || 0;
+    updateLamHints();
+    startAnim();
+    renderFormula();
+    saveState();
+  });
+}
+
+document.querySelectorAll('.spin-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const inp = document.getElementById(btn.dataset.id);
+    inp.value = (parseFloat(inp.value)||0) + parseFloat(btn.dataset.d);
+    inp.dispatchEvent(new Event('input'));
+  });
+});
+
+// drag
+{
+  let dragging = false, startX = 0, startY = 0, startPanX = 0, startPanY = 0;
+  function dragStart(x, y) { dragging=true; startX=x; startY=y; startPanX=panX; startPanY=panY; }
+  function dragMove(x, y) {
+    if (!dragging) return;
+    panX = startPanX + (x - startX);
+    panY = startPanY + (y - startY);
+    scenes.forEach(s => s.draw());
+  }
+  function dragEnd() { if (dragging) saveState(); dragging = false; }
+
+  ['c-left','c-right'].forEach(id => {
+    const cv = document.getElementById(id);
+    cv.addEventListener('mousedown', e => { dragStart(e.clientX,e.clientY); cv.classList.add('dragging'); e.preventDefault(); });
+    cv.addEventListener('touchstart', e => { if(e.touches.length===1){dragStart(e.touches[0].clientX,e.touches[0].clientY); e.preventDefault();} }, {passive:false});
+  });
+  window.addEventListener('mousemove', e => dragMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', () => { dragEnd(); ['c-left','c-right'].forEach(id=>document.getElementById(id).classList.remove('dragging')); });
+  window.addEventListener('touchmove', e => { if(e.touches.length===1) dragMove(e.touches[0].clientX,e.touches[0].clientY); }, {passive:false});
+  window.addEventListener('touchend', dragEnd);
+}
+
+// Memory cells
+const MEM_COUNT = 4;
+const mems = Array.from({length: MEM_COUNT}, (_, i) =>
+  JSON.parse(localStorage.getItem(`tmem_${i}`) || 'null')
+);
+
+function drawMemCanvas(cv, data) {
+  const SZ = 112;
+  cv.width = SZ; cv.height = SZ;
+  const ctx = cv.getContext('2d');
+  ctx.clearRect(0, 0, SZ, SZ);
+
+  if (!data) {
+    ctx.strokeStyle = '#252525';
+    ctx.setLineDash([4, 5]);
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(1, 1, SZ - 2, SZ - 2);
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#2a2a2a';
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('empty', SZ / 2, SZ / 2);
+    return;
+  }
+
+  const cx = SZ / 2, cy = SZ / 2;
+  const tax = data.ax * data.t1x + data.ay * data.t2x;
+  const tay = data.ax * data.t1y + data.ay * data.t2y;
+  const ext = Math.max(
+    Math.abs(data.t1x), Math.abs(data.t1y),
+    Math.abs(data.t2x), Math.abs(data.t2y),
+    Math.abs(data.ax),  Math.abs(data.ay),
+    Math.abs(tax), Math.abs(tay), 0.5
+  );
+  const sc = (SZ / 2 - 10) / ext;
+
+  function toS(x, y) { return [cx + x * sc, cy - y * sc]; }
+  function mArrow(x2, y2, color) {
+    const [sx2, sy2] = toS(x2, y2);
+    const d = Math.hypot(sx2 - cx, sy2 - cy);
+    if (d < 2) return;
+    const a = Math.atan2(sy2 - cy, sx2 - cx), hl = 6;
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx2, sy2); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sx2, sy2);
+    ctx.lineTo(sx2 - hl * Math.cos(a - 0.4), sy2 - hl * Math.sin(a - 0.4));
+    ctx.lineTo(sx2 - hl * Math.cos(a + 0.4), sy2 - hl * Math.sin(a + 0.4));
+    ctx.closePath(); ctx.fill();
+  }
+
+  ctx.strokeStyle = '#222'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(SZ, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, SZ); ctx.stroke();
+
+  mArrow(data.t1x, data.t1y, '#e05c3a');
+  mArrow(data.t2x, data.t2y, '#5ca8e0');
+  mArrow(data.ax,  data.ay,  '#a0ff80');
+}
+
+function initMemSlots() {
+  const container = document.getElementById('mem-slots');
+  mems.forEach((data, i) => {
+    const row = document.createElement('div');
+    row.className = 'mem-row';
+
+    const num = document.createElement('span');
+    num.className = 'mem-num';
+    num.textContent = i + 1;
+
+    const cv = document.createElement('canvas');
+    cv.className = 'mem-canvas';
+
+    const btns = document.createElement('div');
+    btns.className = 'mem-btns';
+
+    const wBtn = document.createElement('button');
+    wBtn.className = 'mem-btn w-btn';
+    wBtn.textContent = 'W';
+    wBtn.title = 'write current state';
+
+    const rBtn = document.createElement('button');
+    rBtn.className = 'mem-btn r-btn';
+    rBtn.textContent = 'R';
+    rBtn.title = 'read from slot';
+    if (!data) rBtn.disabled = true;
+
+    const cBtn = document.createElement('button');
+    cBtn.className = 'mem-btn c-btn';
+    cBtn.textContent = 'C';
+    cBtn.title = 'clear slot';
+    if (!data) cBtn.disabled = true;
+
+    wBtn.addEventListener('click', () => {
+      mems[i] = { t1x: T1.x, t1y: T1.y, t2x: T2.x, t2y: T2.y, ax: A.x, ay: A.y };
+      localStorage.setItem(`tmem_${i}`, JSON.stringify(mems[i]));
+      drawMemCanvas(cv, mems[i]);
+      rBtn.disabled = false;
+      cBtn.disabled = false;
+    });
+
+    rBtn.addEventListener('click', () => {
+      if (!mems[i]) return;
+      const d = mems[i];
+      T1.x = d.t1x; T1.y = d.t1y;
+      T2.x = d.t2x; T2.y = d.t2y;
+      A.x  = d.ax;  A.y  = d.ay;
+      ['t1x','t1y','t2x','t2y','ax','ay'].forEach(id => {
+        const map = {t1x:[T1,'x'],t1y:[T1,'y'],t2x:[T2,'x'],t2y:[T2,'y'],ax:[A,'x'],ay:[A,'y']};
+        document.getElementById(id).value = map[id][0][map[id][1]];
+      });
+      startAnim();
+      renderFormula();
+      saveState();
+    });
+
+    cBtn.addEventListener('click', () => {
+      mems[i] = null;
+      localStorage.removeItem(`tmem_${i}`);
+      drawMemCanvas(cv, null);
+      rBtn.disabled = true;
+      cBtn.disabled = true;
+    });
+
+    btns.appendChild(wBtn);
+    btns.appendChild(rBtn);
+    btns.appendChild(cBtn);
+    row.appendChild(num);
+    row.appendChild(cv);
+    row.appendChild(btns);
+    container.appendChild(row);
+
+    drawMemCanvas(cv, data);
+  });
+}
+
+initMemSlots();
+</script>
+</body>
+</html>
