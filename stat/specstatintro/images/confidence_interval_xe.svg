@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="190" viewBox="0 0 640 190" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ciArrow2" markerWidth="12" markerHeight="12" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"/>
+    </marker>
+  </defs>
+  <!-- ось -->
+  <line x1="90" y1="120" x2="560" y2="120" stroke="#1f4e79" stroke-width="2.5" marker-end="url(#ciArrow2)"/>
+  <!-- жёлтая полоса интервала -->
+  <rect x="200" y="111" width="260" height="18" fill="#ffd966" stroke="#bf9000" stroke-width="1"/>
+  <!-- засечки -->
+  <line x1="200" y1="107" x2="200" y2="133" stroke="#1f4e79" stroke-width="2.5"/>
+  <line x1="330" y1="107" x2="330" y2="133" stroke="#1f4e79" stroke-width="2.5"/>
+  <line x1="460" y1="107" x2="460" y2="133" stroke="#1f4e79" stroke-width="2.5"/>
+  <!-- подписи -->
+  <text x="200" y="158" fill="#1f4e79" font-size="20" font-style="italic" text-anchor="middle">x̄ − E</text>
+  <text x="330" y="158" fill="#1f4e79" font-size="20" font-style="italic" text-anchor="middle">x̄</text>
+  <text x="460" y="158" fill="#1f4e79" font-size="20" font-style="italic" text-anchor="middle">x̄ + E</text>
+  <!-- скобка -->
+  <path d="M200,70 C200,54 330,54 330,46 C330,54 460,54 460,70" fill="none" stroke="#1f4e79" stroke-width="1.6"/>
+  <text x="330" y="32" fill="#1f4e79" font-size="16" font-weight="bold" text-anchor="middle">Доверительный интервал</text>
+</svg>

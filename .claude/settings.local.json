@@ -41,7 +41,42 @@
       "Bash(python3 *)",
       "Bash(python3)",
       "WebFetch(domain:en.wikipedia.org)",
-      "WebFetch(domain:healy.econ.ohio-state.edu)"
+      "WebFetch(domain:healy.econ.ohio-state.edu)",
+      "Bash(mkdir -p *)",
+      "WebFetch(domain:rdrr.io)",
+      "WebFetch(domain:cpb-us-e1.wpmucdn.com)",
+      "WebFetch(domain:www.scientificamerican.com)",
+      "Read(//private/tmp/**)",
+      "Bash(curl -s -A \"Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36\" \"https://www.youtube.com/watch?v=bfQLNyiDPsk\" -o yt_page.html)",
+      "Bash(/tmp/ytenv/bin/pip install *)",
+      "Bash(/tmp/ytenv/bin/python -c \"import youtube_transcript_api; print\\(youtube_transcript_api.__version__\\)\")",
+      "Bash(/tmp/ytenv/bin/python -)",
+      "Read(//Users/kravtsov777/**)",
+      "Read(//Users/kravtsov777/.local/pipx/**)",
+      "Bash(mkdir -p ~/.venvs)",
+      "Bash(~/.venvs/yt/bin/pip install *)",
+      "Bash(~/.venvs/yt/bin/pip list *)",
+      "Bash(~/.venvs/yt/bin/python -c \"from youtube_transcript_api import YouTubeTranscriptApi; print\\('import OK'\\)\")",
+      "Bash(rm -rf /tmp/ytenv && echo \"removed /tmp/ytenv\"; echo \"--- final: home venv ---\"; ls -d ~/.venvs/yt && du -sh ~/.venvs/yt 2>/dev/null)",
+      "Bash(~/.venvs/yt/bin/pip freeze *)",
+      "Read(//opt/anaconda3/envs/matancode/bin/**)",
+      "Bash(/opt/anaconda3/envs/matancode/bin/python -c \"import matplotlib; print\\('matancode matplotlib', matplotlib.__version__\\)\")",
+      "Bash(~/.venvs/plot/bin/pip install *)",
+      "Bash(~/.venvs/plot/bin/python -c \"import matplotlib; print\\('matplotlib', matplotlib.__version__\\)\")",
+      "Bash(~/.venvs/plot/bin/python -)",
+      "WebFetch(domain:www.youtube.com)",
+      "Bash(conda env *)",
+      "Read(//opt/anaconda3/**)",
+      "Bash(/opt/homebrew/Caskroom/miniconda/base/envs/matancode/bin/python -m pip install -q jinja2)",
+      "Bash(/opt/homebrew/Caskroom/miniconda/base/envs/matancode/bin/python -c \"import jinja2; print\\('jinja2', jinja2.__version__\\)\")",
+      "Bash(/opt/homebrew/Caskroom/miniconda/base/envs/matancode/bin/python -)",
+      "Bash(/opt/homebrew/Caskroom/miniconda/base/envs/matancode/bin/python -c ' *)",
+      "Bash(/opt/homebrew/Caskroom/miniconda/base/envs/matancode/bin/python)",
+      "Bash(/opt/homebrew/Caskroom/miniconda/base/openssl)"
+    ],
+    "additionalDirectories": [
+      "/Users/kravtsov777/Code/ainots/specstatintro",
+      "/private/tmp/ytenv"
     ]
   }
 }
