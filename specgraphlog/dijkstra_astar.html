@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дейкстра и A* — пошаговая визуализация</title>
+<style>
+  :root{ --bg:#f7f8fa; --ink:#1a2230; --muted:#6b7280; --line:#d6dae1; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+        background:var(--bg); color:var(--ink); padding:18px; }
+  h1{ font-size:20px; margin:0 0 4px; }
+  .sub{ color:var(--muted); font-size:13px; margin-bottom:14px; }
+  .wrap{ display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; }
+  canvas{ background:#fff; border:1px solid var(--line); border-radius:10px;
+           box-shadow:0 1px 3px rgba(0,0,0,.06); cursor:pointer; }
+  .panel{ min-width:250px; }
+  .row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  button{ font:inherit; padding:7px 12px; border:1px solid var(--line); background:#fff;
+           border-radius:8px; cursor:pointer; }
+  button:hover{ background:#eef1f5; }
+  button.primary{ background:#2f6fb0; color:#fff; border-color:#2f6fb0; }
+  button.primary:hover{ background:#285f97; }
+  .seg{ display:inline-flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .seg button{ border:none; border-radius:0; }
+  .seg button.on{ background:#2f6fb0; color:#fff; }
+  label{ font-size:13px; color:var(--muted); }
+  .stat{ background:#fff; border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+         font-size:14px; line-height:1.7; }
+  .stat b{ font-variant-numeric:tabular-nums; }
+  .legend{ display:grid; grid-template-columns:auto 1fr; gap:6px 8px; font-size:13px;
+           align-items:center; margin-top:12px; }
+  .sw{ width:16px; height:16px; border-radius:4px; border:1px solid #0002; }
+  .hint{ font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5; }
+  input[type=range]{ width:130px; }
+</style>
+</head>
+<body>
+  <h1>Дейкстра и A* — как они работают по шагам</h1>
+  <div class="sub">Клик по клетке — поставить/убрать стену. Перетаскивай зелёную (старт) и красную (цель). Ход в 4 стороны, вес каждого шага = 1.</div>
+
+  <div class="wrap">
+    <canvas id="cv" width="640" height="480"></canvas>
+
+    <div class="panel">
+      <div class="row">
+        <span class="seg" id="algseg">
+          <button data-alg="dijkstra" class="on">Дейкстра</button>
+          <button data-alg="astar">A*</button>
+        </span>
+      </div>
+      <div class="row">
+        <button id="step" class="primary">Шаг ▸</button>
+        <button id="play">▶ Авто</button>
+        <button id="reset">⟲ Сброс</button>
+        <button id="maze">Случайные стены</button>
+      </div>
+      <div class="row">
+        <label>Скорость</label>
+        <input type="range" id="speed" min="1" max="60" value="20">
+      </div>
+
+      <div class="stat" id="stat"></div>
+
+      <div class="legend">
+        <span class="sw" style="background:#8fd08a"></span><span>старт</span>
+        <span class="sw" style="background:#e57373"></span><span>цель</span>
+        <span class="sw" style="background:#f0a02a"></span><span>в очереди (open) — оценка предварительная</span>
+        <span class="sw" style="background:#8fb7e0"></span><span>обработана (closed) — d окончательное</span>
+        <span class="sw" style="background:#ffe08a"></span><span>текущая (только что извлечена)</span>
+        <span class="sw" style="background:#ffd21f"></span><span>кратчайший путь</span>
+        <span class="sw" style="background:#4b5563"></span><span>стена</span>
+      </div>
+
+      <div class="hint">
+        A* берёт из очереди вершину с минимальным <b>f = g + h</b>, где g — пройденное расстояние,
+        h — оценка оставшегося до цели (здесь евклидово расстояние). Дейкстра — это A* с h = 0:
+        он расходится во все стороны, A* тянется к цели и обычно обрабатывает меньше клеток.
+      </div>
+    </div>
+  </div>
+
+<script>
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const COLS = 32, ROWS = 24, S = 20;            // grid + cell size
+cv.width = COLS*S; cv.height = ROWS*S;
+
+let walls, start, goal, alg = 'dijkstra';
+let state = null, timer = null;
+
+function idx(r,c){ return r*COLS + c; }
+function inb(r,c){ return r>=0 && r<ROWS && c>=0 && c<COLS; }
+
+function initGrid(){
+  walls = new Uint8Array(ROWS*COLS);
+  start = {r: Math.floor(ROWS/2), c: 3};
+  goal  = {r: Math.floor(ROWS/2), c: COLS-4};
+  resetRun();
+}
+
+function randomMaze(){
+  walls = new Uint8Array(ROWS*COLS);
+  for(let i=0;i<ROWS*COLS;i++) if(Math.random()<0.26) walls[i]=1;
+  walls[idx(start.r,start.c)] = 0;
+  walls[idx(goal.r,goal.c)] = 0;
+  resetRun();
+}
+
+// heuristic: Euclidean distance to goal
+function h(r,c){
+  if(alg==='dijkstra') return 0;
+  const dr = r-goal.r, dc = c-goal.c;
+  return Math.hypot(dr,dc);
+}
+
+function resetRun(){
+  stopPlay();
+  const N = ROWS*COLS;
+  state = {
+    g: new Float64Array(N).fill(Infinity),
+    f: new Float64Array(N).fill(Infinity),
+    prev: new Int32Array(N).fill(-1),
+    closed: new Uint8Array(N),
+    open: new Uint8Array(N),
+    open_list: [],
+    current: -1,
+    done: false,
+    found: false,
+    steps: 0,
+    processed: 0,
+    path: null,
+  };
+  const s = idx(start.r,start.c);
+  state.g[s] = 0;
+  state.f[s] = h(start.r,start.c);
+  state.open[s] = 1;
+  state.open_list.push(s);
+  draw(); updateStat();
+}
+
+// one step = extract min from open, close it, relax neighbours
+function step(){
+  if(state.done) return;
+  if(state.open_list.length===0){ state.done = true; state.current=-1; draw(); updateStat(); return; }
+
+  // find min f (tie-break by smaller h → closer to goal)
+  let bi = 0;
+  for(let i=1;i<state.open_list.length;i++){
+    const a = state.open_list[i], b = state.open_list[bi];
+    if(state.f[a] < state.f[b] - 1e-9) bi = i;
+  }
+  const u = state.open_list.splice(bi,1)[0];
+  state.open[u] = 0;
+  state.closed[u] = 1;
+  state.current = u;
+  state.processed++;
+  state.steps++;
+
+  const ur = Math.floor(u/COLS), uc = u%COLS;
+
+  if(u === idx(goal.r,goal.c)){
+    state.done = true; state.found = true;
+    buildPath();
+    draw(); updateStat(); return;
+  }
+
+  const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+  for(const [dr,dc] of dirs){
+    const vr = ur+dr, vc = uc+dc;
+    if(!inb(vr,vc)) continue;
+    const v = idx(vr,vc);
+    if(walls[v] || state.closed[v]) continue;
+    const ng = state.g[u] + 1;                 // edge weight = 1
+    if(ng < state.g[v]){                        // relaxation
+      state.g[v] = ng;
+      state.f[v] = ng + h(vr,vc);
+      state.prev[v] = u;
+      if(!state.open[v]){ state.open[v]=1; state.open_list.push(v); }
+    }
+  }
+  draw(); updateStat();
+}
+
+function buildPath(){
+  const path = [];
+  let cur = idx(goal.r,goal.c);
+  while(cur !== -1){ path.push(cur); cur = state.prev[cur]; }
+  state.path = path.reverse();
+}
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const i = idx(r,c);
+    let col = '#ffffff';
+    if(walls[i]) col = '#4b5563';
+    else if(state.closed[i]) col = '#8fb7e0';
+    else if(state.open[i]) col = '#f0a02a';
+    if(state.current===i && !state.done) col = '#ffe08a';
+    ctx.fillStyle = col;
+    ctx.fillRect(c*S, r*S, S-1, S-1);
+  }
+  // path
+  if(state.path){
+    for(const i of state.path){
+      const r=Math.floor(i/COLS), c=i%COLS;
+      ctx.fillStyle = '#ffd21f';
+      ctx.fillRect(c*S, r*S, S-1, S-1);
+    }
+  }
+  // start / goal
+  drawCell(start.r,start.c,'#8fd08a');
+  drawCell(goal.r,goal.c,'#e57373');
+}
+function drawCell(r,c,col){ ctx.fillStyle=col; ctx.fillRect(c*S,r*S,S-1,S-1); }
+
+function updateStat(){
+  const st = document.getElementById('stat');
+  let status = 'идёт поиск…';
+  if(state.done) status = state.found ? 'путь найден ✓' : 'пути нет ✗';
+  const plen = state.path ? (state.path.length-1) : '—';
+  st.innerHTML =
+    `Алгоритм: <b>${alg==='dijkstra'?'Дейкстра':'A*'}</b><br>`+
+    `Шаг (извлечено вершин): <b>${state.processed}</b><br>`+
+    `В очереди сейчас: <b>${state.open_list.length}</b><br>`+
+    `Длина пути: <b>${plen}</b><br>`+
+    `Статус: <b>${status}</b>`;
+}
+
+// ---- controls ----
+document.getElementById('step').onclick = ()=> step();
+document.getElementById('reset').onclick = ()=> resetRun();
+document.getElementById('maze').onclick = ()=> randomMaze();
+
+let playing=false;
+function stopPlay(){ playing=false; if(timer){clearInterval(timer);timer=null;} const b=document.getElementById('play'); if(b) b.textContent='▶ Авто'; }
+document.getElementById('play').onclick = function(){
+  if(playing){ stopPlay(); return; }
+  playing=true; this.textContent='⏸ Пауза';
+  const fps = +document.getElementById('speed').value;
+  timer = setInterval(()=>{ if(state.done){ stopPlay(); return; } step(); }, 1000/fps);
+};
+document.getElementById('speed').oninput = function(){
+  if(playing){ stopPlay(); document.getElementById('play').click(); }
+};
+
+document.querySelectorAll('#algseg button').forEach(b=>{
+  b.onclick = ()=>{
+    document.querySelectorAll('#algseg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    alg = b.dataset.alg;
+    resetRun();
+  };
+});
+
+// ---- mouse: draw walls / drag start & goal ----
+let dragMode = null; // 'wall','erase','start','goal'
+function cellAt(e){
+  const rect = cv.getBoundingClientRect();
+  const c = Math.floor((e.clientX-rect.left)/S), r = Math.floor((e.clientY-rect.top)/S);
+  return inb(r,c) ? {r,c} : null;
+}
+cv.addEventListener('mousedown', e=>{
+  const p = cellAt(e); if(!p) return;
+  if(p.r===start.r && p.c===start.c) dragMode='start';
+  else if(p.r===goal.r && p.c===goal.c) dragMode='goal';
+  else { dragMode = walls[idx(p.r,p.c)] ? 'erase' : 'wall'; applyCell(p); }
+});
+cv.addEventListener('mousemove', e=>{
+  if(!dragMode) return;
+  const p = cellAt(e); if(!p) return; applyCell(p);
+});
+window.addEventListener('mouseup', ()=> dragMode=null);
+function applyCell(p){
+  const i = idx(p.r,p.c);
+  if(dragMode==='start'){ if(!walls[i]){ start={r:p.r,c:p.c}; resetRun(); } }
+  else if(dragMode==='goal'){ if(!walls[i]){ goal={r:p.r,c:p.c}; resetRun(); } }
+  else if(dragMode==='wall'){ if(!(p.r===start.r&&p.c===start.c)&&!(p.r===goal.r&&p.c===goal.c)){ walls[i]=1; resetRun(); } }
+  else if(dragMode==='erase'){ walls[i]=0; resetRun(); }
+}
+
+initGrid();
+</script>
+</body>
+</html>

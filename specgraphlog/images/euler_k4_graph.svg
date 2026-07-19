@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="540" viewBox="0 0 560 540" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect width="560" height="540" fill="#ffffff"/>
+  <!-- face labels (behind edges) -->
+  <text x="200" y="285" font-size="20" fill="#c25a1a" text-anchor="middle" font-weight="bold">F1</text>
+  <text x="360" y="285" font-size="20" fill="#c25a1a" text-anchor="middle" font-weight="bold">F2</text>
+  <text x="280" y="420" font-size="20" fill="#c25a1a" text-anchor="middle" font-weight="bold">F3</text>
+  <text x="500" y="90" font-size="20" fill="#c25a1a" text-anchor="middle" font-weight="bold">F4</text>
+  <text x="500" y="112" font-size="12" fill="#c25a1a" text-anchor="middle">внешняя</text>
+
+  <!-- edges -->
+  <g stroke="#4a8a3f" stroke-width="3">
+    <line x1="280" y1="70"  x2="90"  y2="470"/>
+    <line x1="280" y1="70"  x2="470" y2="470"/>
+    <line x1="280" y1="70"  x2="280" y2="300"/>
+    <line x1="90"  y1="470" x2="470" y2="470"/>
+    <line x1="90"  y1="470" x2="280" y2="300"/>
+    <line x1="470" y1="470" x2="280" y2="300"/>
+  </g>
+
+  <!-- vertices = regions -->
+  <g fill="#3d6ba5" stroke="#2c4f7c" stroke-width="2">
+    <circle cx="280" cy="70"  r="26"/>
+    <circle cx="90"  cy="470" r="26"/>
+    <circle cx="470" cy="470" r="26"/>
+    <circle cx="280" cy="300" r="26"/>
+  </g>
+  <g fill="#ffffff" font-size="20" font-weight="bold" text-anchor="middle" dominant-baseline="central">
+    <text x="280" y="70">A</text>
+    <text x="90"  y="470">B</text>
+    <text x="470" y="470">C</text>
+    <text x="280" y="300">D</text>
+  </g>
+</svg>
