@@ -1,0 +1,14 @@
+1. Как включить в эксель Анализ данных?
+2. R-course https://www.datacamp.com/users?redirect=%2Fcourses%2Ffree-introduction-to-r%2Fcontinue
+3. Azure AI learning paths: https://aischool.microsoft.com/en-us/services/learning-paths
+4. Azure AI Demos: https://aidemos.microsoft.com/
+5/ Начать работать с Азур: https://azure.microsoft.com/ru-ru/free/search/?&OCID=AID631172_SEM_KVBeysXZ&gclid=EAIaIQobChMI086L_tD-3gIVGKaaCh0QhwNHEAAYASAAEgJUmPD_BwE
+6. Azure - MS - специальности - https://azure.microsoft.com/en-us/services/machine-learning-studio/
+7 Хабр просто о нейросетях: https://habr.com/post/312450/
+8. Тренировка нейросетей http://matlab.exponenta.ru/neuralnetwork/book4/3_3.php
+
+9. Хорошие примеры работы нейросетей
+https://blog.sibirix.ru/2018/01/30/neural_networks/
+10. Русифицированный курс Ng по глубкому обучению: https://proglib.io/p/dmm-course-review/
+
+11. Перевод книги Эндрю Ына «Страсть к машинному обучению» Главы 1 — 14: https://habr.com/ru/post/419757/

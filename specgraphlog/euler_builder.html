@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор графа — формула Эйлера</title>
+<style>
+  :root{ --bg:#f7f8fa; --ink:#1a2230; --muted:#6b7280; --line:#d6dae1;
+         --vx:#6c5ce7; --edge:#3d6ba5; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+        background:var(--bg); color:var(--ink); padding:18px; }
+  h1{ font-size:19px; margin:0 0 4px; }
+  .sub{ color:var(--muted); font-size:13px; margin-bottom:14px; max-width:620px; line-height:1.5; }
+  .wrap{ display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; }
+  .left{ display:flex; flex-direction:column; gap:12px; }
+  canvas{ background:#fff; border:1px solid var(--line); border-radius:12px;
+          box-shadow:0 1px 3px rgba(0,0,0,.06); cursor:crosshair; touch-action:none;
+          -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  .panel{ min-width:230px; }
+  .tools{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .tool{ font:inherit; padding:8px 12px; border:1px solid var(--line); background:#fff;
+         border-radius:9px; cursor:pointer; display:flex; align-items:center; gap:7px; }
+  .tool:hover{ background:#eef1f5; }
+  .tool.on{ background:var(--vx); color:#fff; border-color:var(--vx); }
+  .tool .ic{ width:16px; height:16px; }
+  .misc{ display:flex; gap:8px; margin-bottom:14px; }
+  .misc button{ font:inherit; padding:7px 11px; border:1px solid var(--line);
+                background:#fff; border-radius:8px; cursor:pointer; }
+  .misc button:hover{ background:#eef1f5; }
+  .counts{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .crow{ display:flex; justify-content:space-between; align-items:baseline;
+         font-size:15px; padding:5px 0; }
+  .crow .k{ color:var(--muted); }
+  .crow .v{ font-variant-numeric:tabular-nums; font-weight:600; font-size:17px; }
+  .euler{ margin-top:10px; padding-top:12px; border-top:1px solid var(--line);
+          font-size:16px; text-align:center; }
+  .euler .big{ font-size:22px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .ok{ color:#2e7d32; } .warn{ color:#c0392b; }
+  .note{ font-size:12px; color:var(--muted); margin-top:12px; line-height:1.5; }
+  .faces{ background:#fff; border:1px solid var(--line); border-radius:12px;
+          padding:12px 14px; width:720px; max-width:100%; }
+  .faces h2{ font-size:14px; margin:0 0 8px; }
+  .flist{ display:flex; flex-wrap:wrap; gap:8px; }
+  .fitem{ font:inherit; font-size:13px; padding:7px 11px; border:1px solid var(--line);
+          background:#fbfbfd; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .fitem:hover{ background:#eef1f5; }
+  .fitem.on{ background:#ffe9a8; border-color:#e0a800; }
+  .fitem.outer{ cursor:default; color:var(--muted); background:#f4f5f7; }
+  .fitem.outer:hover{ background:#f4f5f7; }
+  .fsw{ width:13px; height:13px; border-radius:3px; border:1px solid #0002; }
+  .empty{ color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+  <h1>Конструктор графа — формула Эйлера V − E + F = 2</h1>
+  <div class="sub">
+    <b>Вершина</b> — клик по пустому месту (можно перетаскивать). <b>Ребро</b> — клик по одной
+    вершине, затем по другой. <b>Удалить</b> — клик по вершине или ребру. Граф сохраняется
+    автоматически. Ниже — список граней графа: клик по грани подсвечивает её.
+  </div>
+
+  <div class="wrap">
+    <div class="left">
+      <canvas id="cv" width="720" height="560"></canvas>
+      <div class="faces">
+        <h2>Грани графа (F)</h2>
+        <div class="flist" id="flist"><span class="empty">граней пока нет</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="tools" id="tools">
+        <button class="tool on" data-tool="vertex">
+          <svg class="ic" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="#6c5ce7"/></svg>
+          Вершина
+        </button>
+        <button class="tool" data-tool="edge">
+          <svg class="ic" viewBox="0 0 16 16"><line x1="3" y1="13" x2="13" y2="3" stroke="#3d6ba5" stroke-width="2"/><circle cx="3" cy="13" r="2.4" fill="#6c5ce7"/><circle cx="13" cy="3" r="2.4" fill="#6c5ce7"/></svg>
+          Ребро
+        </button>
+        <button class="tool" data-tool="delete">
+          <svg class="ic" viewBox="0 0 16 16"><line x1="3" y1="3" x2="13" y2="13" stroke="#c0392b" stroke-width="2"/><line x1="13" y1="3" x2="3" y2="13" stroke="#c0392b" stroke-width="2"/></svg>
+          Удалить
+        </button>
+      </div>
+      <div class="misc">
+        <button id="untangle">Разложить планарно</button>
+        <button id="example">Пример K4</button>
+        <button id="clear">Очистить</button>
+      </div>
+
+      <div class="counts">
+        <div class="crow"><span class="k">V — вершины</span><span class="v" id="cV">0</span></div>
+        <div class="crow"><span class="k">E — рёбра</span><span class="v" id="cE">0</span></div>
+        <div class="crow"><span class="k">F — грани графа</span><span class="v" id="cF">1</span></div>
+        <div class="crow"><span class="k">компонент связности</span><span class="v" id="cC">0</span></div>
+        <div class="euler">
+          V − E + F = <span class="big" id="cSum">—</span>
+          <div id="cVerdict" style="font-size:13px;margin-top:4px;"></div>
+        </div>
+      </div>
+      <div class="note">
+        Грани определяются по структуре графа (плоское вложение), без привязки к тому, как он
+        нарисован. Поэтому число граней не меняется, как вершины ни таскай, а F = E − V + 1 + C.
+        Кнопка «Разложить планарно» просто выпрямляет рисунок. Если граф непланарный (K5, K3,3) —
+        граней нет.
+      </div>
+    </div>
+  </div>
+
+<script>
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const W = 720, H = 560;
+const dpr = window.devicePixelRatio || 1;
+cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+cv.style.width = W+'px'; cv.style.height = H+'px';
+ctx.setTransform(dpr,0,0,dpr,0,0);
+
+const LS_KEY = 'euler_builder_graph_v1';
+let vertices = [];          // {x,y}
+let edges = [];             // [i,j] indices
+let tool = 'vertex';
+let pendingV = -1;
+let mouse = {x:0,y:0};
+let cur = {planar:true, bounded:[], outer:null, F:0, C:0};
+let selectedFace = -1;      // index into cur.bounded, or -2 for the outer face
+const R = 13;
+const FACE_COLORS = ['#f0a02a','#8fb7e0','#8fd08a','#e79ac0','#b39ddb','#7fd0c8','#f2c14e','#f28b82','#a0c4ff'];
+
+// ---------- persistence ----------
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({vertices, edges})); }catch(e){} }
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if(d && Array.isArray(d.vertices) && Array.isArray(d.edges)){ vertices=d.vertices; edges=d.edges; }
+  }catch(e){}
+}
+
+// ---------- geometry helpers (only for picking / drawing, never for faces) ----------
+function vAt(x,y){
+  for(let i=vertices.length-1;i>=0;i--){
+    const v=vertices[i]; if((v.x-x)**2+(v.y-y)**2 <= (R+4)**2) return i;
+  }
+  return -1;
+}
+function distToSeg(px,py,a,b){
+  const dx=b.x-a.x, dy=b.y-a.y, L2=dx*dx+dy*dy;
+  let t = L2? ((px-a.x)*dx+(py-a.y)*dy)/L2 : 0;
+  t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(a.x+t*dx), py-(a.y+t*dy));
+}
+function edgeAt(x,y){
+  for(let k=edges.length-1;k>=0;k--){
+    const [i,j]=edges[k];
+    if(distToSeg(x,y,vertices[i],vertices[j]) <= 6) return k;
+  }
+  return -1;
+}
+function hasEdge(i,j){ return edges.some(([a,b])=>(a===i&&b===j)||(a===j&&b===i)); }
+
+// ================= COMBINATORIAL FACES (no coordinates) =================
+const ek = (a,b)=> a<b ? a+'_'+b : b+'_'+a;
+
+function components(N){
+  const p=Array.from({length:N},(_,i)=>i);
+  const find=x=>{ while(p[x]!==x){ p[x]=p[p[x]]; x=p[x]; } return x; };
+  edges.forEach(([a,b])=>{ p[find(a)]=find(b); });
+  const s=new Set(); for(let i=0;i<N;i++) s.add(find(i)); return s.size;
+}
+
+// biconnected components (Hopcroft–Tarjan); returns array of blocks, each a list of [a,b]
+function blocks(N){
+  const adj=Array.from({length:N},()=>[]);
+  edges.forEach(([a,b])=>{ adj[a].push(b); adj[b].push(a); });
+  const disc=Array(N).fill(-1), low=Array(N).fill(0); let timer=0;
+  const st=[], res=[];
+  function dfs(u,pk){
+    disc[u]=low[u]=timer++;
+    for(const w of adj[u]){
+      const k=ek(u,w);
+      if(disc[w]===-1){
+        st.push([u,w]); dfs(w,k); low[u]=Math.min(low[u],low[w]);
+        if(low[w]>=disc[u]){
+          const comp=[];
+          while(st.length){ const e=st.pop(); comp.push(e); if(e[0]===u&&e[1]===w) break; }
+          res.push(comp);
+        }
+      } else if(k!==pk && disc[w]<disc[u]){
+        st.push([u,w]); low[u]=Math.min(low[u],disc[w]);
+      }
+    }
+  }
+  for(let s=0;s<N;s++) if(disc[s]===-1) dfs(s,null);
+  return res;
+}
+
+function findCycle(verts, adj){
+  const parent=new Map([[verts[0],null]]);
+  const visited=new Set(); let found=null;
+  function dfs(u,par){
+    visited.add(u);
+    for(const w of adj.get(u)){
+      if(w===par) continue;
+      if(visited.has(w)){
+        const cyc=[u]; let x=u;
+        while(x!==w){ x=parent.get(x); cyc.push(x); }
+        found=cyc; return true;
+      }
+      parent.set(w,u);
+      if(dfs(w,u)) return true;
+    }
+    return false;
+  }
+  dfs(verts[0],null);
+  return found;
+}
+
+function getArc(f,a,b){
+  let i=f.indexOf(a); const res=[];
+  while(true){ res.push(f[i]); if(f[i]===b) break; i=(i+1)%f.length; }
+  return res;
+}
+
+// DMP planar embedding of one 2-connected block; returns list of face-cycles or null
+function dmpFaces(verts, bedges){
+  const adj=new Map(verts.map(v=>[v,new Set()]));
+  bedges.forEach(([a,b])=>{ adj.get(a).add(b); adj.get(b).add(a); });
+  const allE=new Set(bedges.map(([a,b])=>ek(a,b)));
+  const cyc=findCycle(verts,adj);
+  if(!cyc) return null;
+  const embV=new Set(cyc);
+  const embE=new Set(cyc.map((v,i)=>ek(v,cyc[(i+1)%cyc.length])));
+  const faces=[cyc.slice(), cyc.slice().reverse()];
+  let guard=0;
+  while(embE.size<allE.size){
+    if(guard++>10000) return null;
+    const frags=[];
+    for(const e of allE){ if(embE.has(e)) continue;
+      const [a,b]=e.split('_').map(Number);
+      if(embV.has(a)&&embV.has(b)) frags.push({contacts:new Set([a,b]), edges:[[a,b]]});
+    }
+    const seen=new Set();
+    for(const s of verts){ if(embV.has(s)||seen.has(s)) continue;
+      const contacts=new Set(), fedges=[], stack=[s]; seen.add(s);
+      while(stack.length){ const u=stack.pop();
+        for(const w of adj.get(u)){
+          if(embE.has(ek(u,w))) continue;
+          fedges.push([u,w]);
+          if(embV.has(w)) contacts.add(w);
+          else if(!seen.has(w)){ seen.add(w); stack.push(w); }
+        }
+      }
+      frags.push({contacts, edges:fedges});
+    }
+    let best=null;
+    for(const fr of frags){
+      const adm=[];
+      for(let i=0;i<faces.length;i++){
+        const fs=new Set(faces[i]); let ok=true;
+        for(const c of fr.contacts){ if(!fs.has(c)){ ok=false; break; } }
+        if(ok) adm.push(i);
+      }
+      if(adm.length===0) return null;      // non-planar
+      if(!best || adm.length<best.adm.length) best={fr,adm};
+    }
+    const fr=best.fr, fi=best.adm[0], f=faces[fi], fset=new Set(f);
+    const conf=[...fr.contacts].filter(c=>fset.has(c));
+    const fadj=new Map();
+    fr.edges.forEach(([u,v])=>{ if(!fadj.has(u))fadj.set(u,new Set()); if(!fadj.has(v))fadj.set(v,new Set()); fadj.get(u).add(v); fadj.get(v).add(u); });
+    const a=conf[0], targets=new Set(conf.slice(1));
+    const prev=new Map([[a,null]]), dq=[a]; let path=null;
+    while(dq.length){
+      const u=dq.shift();
+      if(targets.has(u)){ path=[u]; let x=u; while(prev.get(x)!==null){ x=prev.get(x); path.push(x); } path.reverse(); break; }
+      for(const w of (fadj.get(u)||[])){
+        if(prev.has(w)) continue;
+        if(!embV.has(w) || targets.has(w)){ prev.set(w,u); dq.push(w); }
+      }
+    }
+    if(!path) return null;
+    const b=path[path.length-1], inner=path.slice(1,-1);
+    const arc1=getArc(f,a,b), arc2=getArc(f,b,a);
+    faces[fi]=arc1.concat(inner.slice().reverse());
+    faces.push(arc2.concat(inner));
+    for(let i=0;i+1<path.length;i++) embE.add(ek(path[i],path[i+1]));
+    path.forEach(v=>embV.add(v));
+  }
+  return faces;
+}
+
+// assemble faces of the whole graph from its blocks
+function graphFaces(){
+  const N=vertices.length;
+  if(N===0) return {planar:true, bounded:[], outer:null, F:0, C:0};
+  const C=components(N), E=edges.length;
+  const bks=blocks(N);
+  const bounded=[]; let outer=null;
+  for(const blk of bks){
+    if(blk.length===1) continue;           // bridge: no bounded face
+    const vs=new Set(); blk.forEach(([a,b])=>{ vs.add(a); vs.add(b); });
+    const fc=dmpFaces([...vs], blk);
+    if(!fc) return {planar:false, bounded:[], outer:null, F:null, C};
+    let oi=0; for(let i=1;i<fc.length;i++) if(fc[i].length>fc[oi].length) oi=i;
+    for(let i=0;i<fc.length;i++) if(i!==oi) bounded.push(fc[i]);
+    if(outer===null) outer=fc[oi];
+  }
+  const F=E-N+1+C;
+  const cleanOuter = (bks.length===1 && bks[0].length>1) ? outer : null;
+  return {planar:true, bounded, outer:cleanOuter, F, C};
+}
+
+// cache faces by topology so dragging (positions only) doesn't recompute
+let faceCache={key:null,val:null};
+function graphFacesCached(){
+  const key=vertices.length+'|'+edges.map(e=>ek(e[0],e[1])).sort().join(',');
+  if(faceCache.key===key) return faceCache.val;
+  const val=graphFaces(); faceCache={key,val}; return val;
+}
+
+// ---------- Tutte layout, only for the "Разложить планарно" button ----------
+function tutte(C){
+  const P=vertices.map(()=>({x:360,y:280}));
+  const k=C.length, cx=360, cy=280, Rt=230;
+  C.forEach((v,t)=>{ const a=2*Math.PI*t/k; P[v]={x:cx+Rt*Math.cos(a), y:cy+Rt*Math.sin(a)}; });
+  const nb=vertices.map(()=>[]);
+  edges.forEach(([a,b])=>{ nb[a].push(b); nb[b].push(a); });
+  const outer=new Set(C), inner=vertices.map((_,i)=>i).filter(i=>!outer.has(i));
+  for(let it=0; it<600; it++) for(const v of inner){
+    if(!nb[v].length) continue;
+    let sx=0,sy=0; nb[v].forEach(w=>{ sx+=P[w].x; sy+=P[w].y; });
+    P[v].x=sx/nb[v].length; P[v].y=sy/nb[v].length;
+  }
+  return P.some(p=>!isFinite(p.x)||!isFinite(p.y)) ? null : P;
+}
+function untangleLayout(){
+  const g=graphFaces();
+  if(!g.planar) return null;
+  let outer=g.outer;
+  if(!outer){ const pool=g.bounded; if(pool.length) outer=pool.reduce((a,b)=>b.length>a.length?b:a); }
+  if(!outer){ return vertices.map((_,i)=>{ const a=2*Math.PI*i/Math.max(1,vertices.length); return {x:360+230*Math.cos(a), y:280+230*Math.sin(a)}; }); }
+  return tutte(outer);
+}
+
+// ---------- draw ----------
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  cur = graphFacesCached();
+  if(selectedFace>=0 && selectedFace>=cur.bounded.length) selectedFace=-1;
+
+  // highlight the selected bounded face (the external face is never drawn)
+  const selF = selectedFace>=0 ? cur.bounded[selectedFace] : null;
+  if(selF){
+    ctx.beginPath();
+    selF.forEach((vi,k)=>{ const p=vertices[vi]; k?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y); });
+    ctx.closePath(); ctx.fillStyle='#ffd21f88'; ctx.fill();
+    ctx.lineWidth=6; ctx.strokeStyle='#e0a800'; ctx.lineCap='round';
+    for(let i=0;i<selF.length;i++){
+      const a=vertices[selF[i]], b=vertices[selF[(i+1)%selF.length]];
+      ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    }
+    ctx.lineCap='butt';
+  }
+
+  // edges
+  ctx.lineWidth=2.5; ctx.strokeStyle='#3d6ba5';
+  edges.forEach(([i,j])=>{
+    ctx.beginPath(); ctx.moveTo(vertices[i].x,vertices[i].y);
+    ctx.lineTo(vertices[j].x,vertices[j].y); ctx.stroke();
+  });
+
+  // rubber edge
+  if(tool==='edge' && pendingV>=0){
+    ctx.setLineDash([5,5]); ctx.strokeStyle='#9aa5b1';
+    ctx.beginPath(); ctx.moveTo(vertices[pendingV].x,vertices[pendingV].y);
+    ctx.lineTo(mouse.x,mouse.y); ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // vertices with numbers
+  vertices.forEach((v,i)=>{
+    ctx.beginPath(); ctx.arc(v.x,v.y,R+6,0,7); ctx.fillStyle='#8f7ff055'; ctx.fill();
+    ctx.beginPath(); ctx.arc(v.x,v.y,R,0,7);
+    ctx.fillStyle=(i===pendingV)?'#e17055':'#6c5ce7'; ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle='#4b3fb0'; ctx.stroke();
+    ctx.fillStyle='#fff'; ctx.font='bold 13px -apple-system,Segoe UI,Arial';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(String(i+1), v.x, v.y);
+  });
+
+  updateCounts();
+  renderFaceList();
+}
+
+function updateCounts(){
+  const V=vertices.length, E=edges.length, C=cur.C||components(V||0);
+  document.getElementById('cV').textContent=V;
+  document.getElementById('cE').textContent=E;
+  document.getElementById('cF').textContent = cur.planar ? cur.F : '—';
+  document.getElementById('cC').textContent = V? C : 0;
+
+  const sumEl=document.getElementById('cSum'), vEl=document.getElementById('cVerdict');
+  if(V===0){ sumEl.textContent='—'; vEl.textContent=''; return; }
+  if(!cur.planar){
+    sumEl.textContent='—';
+    vEl.innerHTML='<span class="warn">граф непланарный — граней на плоскости нет</span>';
+    return;
+  }
+  sumEl.textContent = V-E+cur.F;
+  vEl.innerHTML = C===1 ? '<span class="ok">связный граф → всегда 2 ✓</span>'
+                        : '= 1 + '+C+' компонент(ы)';
+}
+
+function faceLabel(f){ return f.map(vi => vi+1).join('–'); }
+function renderFaceList(){
+  const box=document.getElementById('flist');
+  if(edges.length===0){ box.innerHTML='<span class="empty">граней пока нет</span>'; return; }
+  if(!cur.planar){ box.innerHTML='<span class="empty">граф непланарный (нельзя нарисовать без пересечений) — граней на плоскости нет</span>'; return; }
+  box.innerHTML='';
+  cur.bounded.forEach((f,k)=>{
+    const el=document.createElement('button');
+    el.className='fitem'+(k===selectedFace?' on':'');
+    el.innerHTML='<span class="fsw" style="background:'+FACE_COLORS[k%FACE_COLORS.length]+'"></span>'+
+                 '<b>F'+(k+1)+'</b> — вершины '+faceLabel(f);
+    el.onclick=()=>{ selectedFace = (selectedFace===k)? -1 : k; draw(); };
+    box.appendChild(el);
+  });
+  const n=cur.bounded.length+1;
+  const ext=document.createElement('div');
+  ext.className='fitem outer';
+  ext.innerHTML='<span class="fsw" style="background:#eceff3"></span><b>F'+n+'</b> — внешняя (бесконечная) грань';
+  box.appendChild(ext);
+}
+
+// ---------- interaction ----------
+function pos(e){ const r=cv.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; }
+let dragI=-1;
+
+// Pointer Events: работает мышью, пальцем и Apple Pencil на iPad
+cv.addEventListener('pointerdown', e=>{
+  e.preventDefault();
+  try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+  const p=pos(e); mouse=p;
+  const vi=vAt(p.x,p.y);
+  if(tool==='vertex'){
+    if(vi>=0){ dragI=vi; }
+    else { vertices.push({x:p.x,y:p.y}); selectedFace=-1; save(); draw(); }
+  } else if(tool==='edge'){
+    if(vi>=0){
+      if(pendingV<0){ pendingV=vi; }
+      else if(vi===pendingV){ pendingV=-1; }
+      else { if(!hasEdge(pendingV,vi)) edges.push([pendingV,vi]); pendingV=-1; selectedFace=-1; save(); }
+      draw();
+    }
+  } else if(tool==='delete'){
+    if(vi>=0){
+      edges=edges.filter(([a,b])=>a!==vi&&b!==vi)
+                 .map(([a,b])=>[a>vi?a-1:a, b>vi?b-1:b]);
+      vertices.splice(vi,1);
+      if(pendingV===vi)pendingV=-1; else if(pendingV>vi)pendingV--;
+      selectedFace=-1; save();
+    } else {
+      const ekk=edgeAt(p.x,p.y); if(ekk>=0){ edges.splice(ekk,1); selectedFace=-1; save(); }
+    }
+    draw();
+  }
+}, {passive:false});
+cv.addEventListener('pointermove', e=>{
+  e.preventDefault();
+  mouse=pos(e);
+  if(dragI>=0){ vertices[dragI].x=mouse.x; vertices[dragI].y=mouse.y; draw(); }
+  else if(tool==='edge'&&pendingV>=0){ draw(); }
+}, {passive:false});
+function endDrag(){ if(dragI>=0){ dragI=-1; save(); draw(); } }
+cv.addEventListener('pointerup', endDrag);
+cv.addEventListener('pointercancel', endDrag);
+window.addEventListener('pointerup', endDrag);
+
+document.querySelectorAll('#tools .tool').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#tools .tool').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); tool=b.dataset.tool; pendingV=-1;
+    cv.style.cursor = tool==='vertex'?'crosshair':(tool==='delete'?'not-allowed':'pointer');
+    draw();
+  };
+});
+document.getElementById('untangle').onclick=()=>{
+  const P=untangleLayout();
+  if(!P){ document.getElementById('cVerdict').innerHTML='<span class="warn">граф непланарный — разложить без пересечений нельзя</span>'; return; }
+  vertices=P.map(p=>({x:p.x,y:p.y})); save(); draw();
+};
+document.getElementById('clear').onclick=()=>{ vertices=[]; edges=[]; pendingV=-1; selectedFace=-1; save(); draw(); };
+document.getElementById('example').onclick=()=>{
+  vertices=[{x:360,y:120},{x:170,y:440},{x:550,y:440},{x:360,y:320}];
+  edges=[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
+  pendingV=-1; selectedFace=-1; save(); draw();
+};
+
+load();
+draw();
+
+</script>
+</body>
+</html>

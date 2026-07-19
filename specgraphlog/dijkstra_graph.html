@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дейкстра на графе (30 вершин) — по шагам</title>
+<style>
+  body{ margin:0; font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+        background:#f7f8fa; color:#1a2230; padding:18px; }
+  h1{ font-size:20px; margin:0 0 4px; }
+  .sub{ color:#6b7280; font-size:13px; margin-bottom:14px; max-width:780px; }
+  .wrap{ display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; }
+  canvas{ background:#fff; border:1px solid #d6dae1; border-radius:10px;
+          box-shadow:0 1px 3px rgba(0,0,0,.06); cursor:pointer; }
+  .panel{ min-width:250px; max-width:300px; }
+  .row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  button{ font:inherit; padding:7px 12px; border:1px solid #d6dae1; background:#fff;
+          border-radius:8px; cursor:pointer; }
+  button:hover{ background:#eef1f5; }
+  button.primary{ background:#2f6fb0; color:#fff; border-color:#2f6fb0; }
+  button.primary:hover{ background:#285f97; }
+  label{ font-size:13px; color:#6b7280; }
+  input[type=range]{ width:130px; }
+  .seg{ display:inline-flex; border:1px solid #d6dae1; border-radius:8px; overflow:hidden; }
+  .seg button{ border:none; border-radius:0; padding:7px 14px; }
+  .seg button.on{ background:#2f6fb0; color:#fff; }
+  .stat{ background:#fff; border:1px solid #d6dae1; border-radius:10px; padding:12px 14px;
+         font-size:14px; line-height:1.7; }
+  .log{ background:#fff; border:1px solid #d6dae1; border-radius:10px; padding:10px 12px;
+        font-size:12.5px; margin-top:10px; height:150px; overflow:auto; line-height:1.45; }
+  .log .cur{ color:#a0670f; font-weight:600; }
+  .legend{ display:grid; grid-template-columns:auto 1fr; gap:6px 8px; font-size:13px;
+           align-items:center; margin-top:12px; }
+  .sw{ width:16px; height:16px; border-radius:50%; border:1px solid #0002; }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:6px; font-size:12px; font-weight:600; }
+</style>
+</head>
+<body>
+  <h1>Алгоритм Дейкстры на графе из 30 вершин</h1>
+  <div class="sub">
+    Кликни по вершине, чтобы задать <b style="color:#2f8f2f">старт</b> (первый клик) и <b style="color:#c0392b">финиш</b> (второй клик).
+    Затем «Шаг» или «Авто» — алгоритм по шагам красит вершины: жёлтая → текущая, оранжевые → в очереди, зелёные → зафиксированы. В конце подсветится кратчайший путь.
+  </div>
+
+  <div class="wrap">
+    <canvas id="cv"></canvas>
+
+    <div class="panel">
+      <div class="row">
+        <span class="seg" id="algseg">
+          <button data-alg="dijkstra" class="on">Дейкстра</button>
+          <button data-alg="astar">A*</button>
+        </span>
+      </div>
+      <div class="row">
+        <button id="step" class="primary">Шаг ▸</button>
+        <button id="play">▶ Авто</button>
+        <button id="reset">⟲ Сброс раскраски</button>
+      </div>
+      <div class="row">
+        <label>Скорость</label>
+        <input type="range" id="speed" min="1" max="20" value="5">
+      </div>
+
+      <div class="stat" id="stat"></div>
+      <div class="log" id="log"></div>
+
+      <div class="legend">
+        <span class="sw" style="background:#8fd08a"></span><span>старт</span>
+        <span class="sw" style="background:#e57373"></span><span>финиш</span>
+        <span class="sw" style="background:#cccccc"></span><span>не достигнута (d=∞)</span>
+        <span class="sw" style="background:#f0a02a"></span><span>в очереди</span>
+        <span class="sw" style="background:#4a9b3f"></span><span>зафиксирована</span>
+        <span class="sw" style="background:#ffe08a"></span><span>текущая</span>
+        <span class="sw" style="background:#ffd21f"></span><span>кратчайший путь</span>
+      </div>
+    </div>
+  </div>
+
+<script>
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const W=780, H=580, N=30, R=16;
+const SEED=7;   // фиксированное зерно → граф всегда один и тот же
+function mulberry32(a){
+  return function(){
+    a|=0; a=(a+0x6D2B79F5)|0;
+    let t=Math.imul(a^(a>>>15), 1|a);
+    t=(t+Math.imul(t^(t>>>7), 61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+// HiDPI: рисуем в логических координатах W×H, но backing store в dpr раз крупнее
+(function setupHiDPI(){
+  const dpr=window.devicePixelRatio||1;
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+})();
+let nodes, edges, adj;
+let start=null, goal=null, S=null, timer=null, playing=false, alg='dijkstra';
+
+// эвристика для A*: расстояние до цели в тех же единицах, что и веса (dist/22) — допустимая
+function heur(i){
+  if(alg!=='astar' || goal===null) return 0;
+  return dist(nodes[i], nodes[goal])/22;
+}
+
+// ---------- генерация графа ----------
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+function buildGraph(){
+  // детерминированный органичный граф: seeded PRNG → всегда один и тот же
+  const rnd=mulberry32(SEED);
+  nodes=[]; let tries=0;
+  while(nodes.length<N && tries<40000){
+    tries++;
+    const p={ x:40+rnd()*(W-80), y:40+rnd()*(H-80) };
+    if(nodes.every(q=>dist(p,q)>70)) nodes.push(p);
+  }
+  nodes.forEach((n,i)=>n.id=i);
+
+  const set=new Set();
+  edges=[];
+  function addEdge(a,b){
+    const key=a<b?a+'-'+b:b+'-'+a;
+    if(set.has(key)||a===b) return;
+    set.add(key);
+    const w=Math.max(1, Math.round(dist(nodes[a],nodes[b])/22));
+    edges.push([a,b,w]);
+  }
+  // каждая вершина — к 3 ближайшим
+  nodes.forEach((n,i)=>{
+    nodes.map((m,j)=>[j,dist(n,m)]).filter(x=>x[0]!==i)
+         .sort((p,q)=>p[1]-q[1]).slice(0,3).forEach(([j])=>addEdge(i,j));
+  });
+  // гарантия связности: соединяем компоненты по ближайшим парам
+  const par=[...Array(N).keys()];
+  const find=x=>par[x]===x?x:(par[x]=find(par[x]));
+  const uni=(a,b)=>{ par[find(a)]=find(b); };
+  edges.forEach(([a,b])=>uni(a,b));
+  while(new Set([...Array(N).keys()].map(find)).size>1){
+    let best=null;
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++)
+      if(find(i)!==find(j)){ const d=dist(nodes[i],nodes[j]); if(!best||d<best.d) best={i,j,d}; }
+    addEdge(best.i,best.j); uni(best.i,best.j);
+  }
+
+  adj=Array.from({length:N},()=>[]);
+  edges.forEach(([a,b,w])=>{ adj[a].push([b,w]); adj[b].push([a,w]); });
+
+  // старт — нижняя-левая вершина, финиш — верхняя-правая
+  start=[...Array(N).keys()].reduce((b,i)=> (nodes[i].y-nodes[i].x)>(nodes[b].y-nodes[b].x)?i:b, 0);
+  goal =[...Array(N).keys()].reduce((b,i)=> (nodes[i].x-nodes[i].y)>(nodes[b].x-nodes[b].y)?i:b, 0);
+  resetRun();
+}
+
+// ---------- Дейкстра ----------
+function resetRun(){
+  stopPlay();
+  S={ d:Array(N).fill(Infinity), prev:Array(N).fill(-1),
+      done:Array(N).fill(false), open:Array(N).fill(false),
+      openList:[], current:null, finished:false, found:false, path:null, log:[] };
+  if(start!==null){
+    S.d[start]=0; S.open[start]=true; S.openList.push(start);
+    S.log.push(`Старт — вершина ${start}, d=0. У остальных ∞.`);
+  }
+  draw();
+}
+
+function step(){
+  if(S.finished||start===null) return;
+  if(S.openList.length===0){ S.finished=true; S.current=null; S.log.push('Очередь пуста — готово.'); draw(); return; }
+  let bi=0;
+  for(let i=1;i<S.openList.length;i++){
+    const a=S.openList[i], b=S.openList[bi];
+    if(S.d[a]+heur(a) < S.d[b]+heur(b) - 1e-9) bi=i;   // Дейкстра: h=0; A*: f=g+h
+  }
+  const u=S.openList.splice(bi,1)[0];
+  S.open[u]=false; S.done[u]=true; S.current=u;
+
+  if(goal!==null && u===goal){
+    S.finished=true; S.found=true; buildPath();
+    S.log.push(`Извлекли финиш ${u} (d=${S.d[u]}) → кратчайший путь найден.`);
+    draw(); return;
+  }
+  const rel=[];
+  for(const [v,w] of adj[u]){
+    if(S.done[v]) continue;
+    const nd=S.d[u]+w;
+    if(nd<S.d[v]){
+      const old=S.d[v]===Infinity?'∞':S.d[v];
+      S.d[v]=nd; S.prev[v]=u;
+      if(!S.open[v]){ S.open[v]=true; S.openList.push(v); }
+      rel.push(`${v}:${old}→${nd}`);
+    }
+  }
+  S.log.push(`Фиксируем ${u} (d=${S.d[u]}). `+(rel.length?('Релаксация '+rel.join(', ')):'без улучшений'));
+  if(S.openList.length===0){ S.finished=true; S.log.push('Очередь пуста — готово.'); }
+  draw();
+}
+function buildPath(){
+  const p=[]; let c=goal;
+  while(c!==-1){ p.push(c); c=S.prev[c]; }
+  S.path=p.reverse();
+}
+
+// ---------- отрисовка ----------
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  const pathSet=new Set();
+  if(S.path) for(let i=0;i<S.path.length-1;i++){ const a=S.path[i],b=S.path[i+1]; pathSet.add(a<b?a+'-'+b:b+'-'+a); }
+
+  for(const [a,b,w] of edges){
+    const key=a<b?a+'-'+b:b+'-'+a;
+    const onPath=pathSet.has(key);
+    const onTree=(S.prev[b]===a||S.prev[a]===b);
+    ctx.strokeStyle=onPath?'#ffcf1a':(onTree?'#8bc487':'#cfd4da');
+    ctx.lineWidth=onPath?5:(onTree?2.5:1.2);
+    ctx.beginPath(); ctx.moveTo(nodes[a].x,nodes[a].y); ctx.lineTo(nodes[b].x,nodes[b].y); ctx.stroke();
+    const mx=(nodes[a].x+nodes[b].x)/2, my=(nodes[a].y+nodes[b].y)/2;
+    ctx.fillStyle='#fff'; ctx.fillRect(mx-9,my-8,18,16);
+    ctx.fillStyle='#777'; ctx.font='11px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(w,mx,my);
+  }
+  for(let i=0;i<N;i++){
+    const n=nodes[i];
+    let col='#cccccc';
+    if(S.done[i]) col='#4a9b3f';
+    else if(S.open[i]) col='#f0a02a';
+    if(S.current===i) col='#ffe08a';
+    if(i===start) col='#8fd08a';
+    if(i===goal) col='#e57373';
+    ctx.beginPath(); ctx.arc(n.x,n.y,R,0,7); ctx.fillStyle=col; ctx.fill();
+    ctx.lineWidth=(S.current===i?3:1.3);
+    ctx.strokeStyle=(S.current===i?'#111':'#555'); ctx.stroke();
+    ctx.fillStyle=(col==='#cccccc'||col==='#ffe08a'||col==='#8fd08a')?'#222':'#fff';
+    ctx.font='bold 12px sans-serif';
+    const d=S.d[i]===Infinity?'∞':S.d[i];
+    ctx.fillText(d, n.x, n.y);
+  }
+  updateStat(); updateLog();
+}
+function updateStat(){
+  const done=S.done.filter(Boolean).length;
+  let sel = start===null?'кликни вершину для старта'
+          : goal===null?`старт=${start}, кликни финиш`
+          : `старт=${start}, финиш=${goal}`;
+  let path = S.path?('длина пути = '+S.d[goal]+' ('+S.path.join(' → ')+')'):'—';
+  document.getElementById('stat').innerHTML=
+    `Алгоритм: <b>${alg==='astar'?'A*':'Дейкстра'}</b><br>`+
+    `<span class="badge" style="background:#eef">${sel}</span><br>`+
+    `Зафиксировано: <b>${done} из ${N}</b> · в очереди: <b>${S.openList.length}</b><br>`+
+    `Статус: <b>${S.finished?(S.found?'путь найден ✓':'обход завершён'):'идёт'}</b><br>`+
+    `Путь: <b>${path}</b>`;
+}
+function updateLog(){
+  const el=document.getElementById('log');
+  el.innerHTML=S.log.map((t,i)=>`<div class="${i===S.log.length-1?'cur':''}">${i}. ${t}</div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+// ---------- выбор старта/финиша ----------
+cv.addEventListener('click', e=>{
+  const rect=cv.getBoundingClientRect();
+  const x=e.clientX-rect.left, y=e.clientY-rect.top;
+  let hit=-1;
+  for(let i=0;i<N;i++) if(Math.hypot(nodes[i].x-x,nodes[i].y-y)<=R+2){ hit=i; break; }
+  if(hit<0) return;
+  if(start===null) start=hit;
+  else if(goal===null){ if(hit!==start) goal=hit; }
+  else { start=hit; goal=null; }   // третий клик — начать заново
+  resetRun();
+});
+
+document.querySelectorAll('#algseg button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('#algseg button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on'); alg=b.dataset.alg; resetRun();
+  };
+});
+document.getElementById('step').onclick=()=>step();
+document.getElementById('reset').onclick=()=>resetRun();
+function stopPlay(){ playing=false; if(timer){clearInterval(timer);timer=null;} const b=document.getElementById('play'); if(b)b.textContent='▶ Авто'; }
+document.getElementById('play').onclick=function(){
+  if(start===null) return;
+  if(playing){ stopPlay(); return; }
+  playing=true; this.textContent='⏸ Пауза';
+  const fps=+document.getElementById('speed').value;
+  timer=setInterval(()=>{ if(S.finished){stopPlay();return;} step(); }, 1000/fps);
+};
+
+buildGraph();
+</script>
+</body>
+</html>
