@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="510" viewBox="0 0 900 510" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect width="900" height="510" fill="#ffffff"/>
+  <defs><marker id="ax" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
+  <line x1="110" y1="88" x2="110" y2="430" stroke="#111" stroke-width="2"/>
+  <line x1="110" y1="430" x2="890" y2="430" stroke="#111" stroke-width="2" marker-end="url(#ax)"/>
+  <text x="122.0" y="94.0" font-size="20" font-style="italic" text-anchor="middle">μ</text>
+  <text x="98" y="117.0" font-size="17" text-anchor="end">1,0</text>
+  <text x="98" y="277.0" font-size="17" text-anchor="end">0,5</text>
+  <text x="110.0" y="458" font-size="17" text-anchor="middle">0</text>
+  <text x="198.2" y="458" font-size="17" text-anchor="middle">10</text>
+  <text x="815.9" y="458" font-size="17" text-anchor="middle">80</text>
+  <text x="882.0" y="456" font-size="20" font-style="italic" text-anchor="middle">x</text>
+  <line x1="110" y1="270.0" x2="860" y2="270.0" stroke="#eee" stroke-width="1"/>
+  <polyline points="198.2,430.0 198.2,110.0 304.1,110.0 515.9,430.0" fill="none" stroke="#2f6fb0" stroke-width="3.5"/>
+  <polyline points="304.1,430.0 515.9,110.0 727.6,430.0" fill="none" stroke="#e08a1e" stroke-width="3.5"/>
+  <polyline points="515.9,430.0 727.6,110.0 815.9,110.0 815.9,430.0" fill="none" stroke="#c0392b" stroke-width="3.5"/>
+  <text x="251.2" y="96.0" font-size="20" font-style="italic" fill="#2f6fb0" text-anchor="middle">A₁</text>
+  <text x="515.9" y="96.0" font-size="20" font-style="italic" fill="#e08a1e" text-anchor="middle">A₂</text>
+  <text x="771.8" y="96.0" font-size="20" font-style="italic" fill="#c0392b" text-anchor="middle">A₃</text>
+</svg>

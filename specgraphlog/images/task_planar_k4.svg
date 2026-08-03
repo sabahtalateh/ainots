@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="540" viewBox="0 0 560 540" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <rect width="560" height="540" fill="#ffffff"/>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3d6ba5"/>
+    </marker>
+  </defs>
+  <g stroke="#3d6ba5" stroke-width="2.6">
+  <line x1="268.8" y1="93.5" x2="105.0" y2="438.4" marker-end="url(#arr)"/>
+  <line x1="116.0" y1="470.0" x2="435.0" y2="470.0" marker-end="url(#arr)"/>
+  <line x1="458.8" y1="446.5" x2="295.0" y2="101.6" marker-end="url(#arr)"/>
+  <line x1="280.0" y1="274.0" x2="280.0" y2="105.0" marker-end="url(#arr)"/>
+  <line x1="109.4" y1="452.7" x2="253.9" y2="323.3" marker-end="url(#arr)"/>
+  <line x1="450.6" y1="452.7" x2="306.1" y2="323.3" marker-end="url(#arr)"/>
+  </g>
+  <g fill="#3d6ba5" stroke="#2c4f7c" stroke-width="2">
+    <circle cx="280" cy="70" r="26"/>
+    <circle cx="90" cy="470" r="26"/>
+    <circle cx="470" cy="470" r="26"/>
+    <circle cx="280" cy="300" r="26"/>
+  </g>
+  <g fill="#ffffff" font-size="20" font-weight="bold" text-anchor="middle" dominant-baseline="central">
+    <text x="280" y="70">1</text>
+    <text x="90" y="470">2</text>
+    <text x="470" y="470">3</text>
+    <text x="280" y="300">4</text>
+  </g>
+</svg>
