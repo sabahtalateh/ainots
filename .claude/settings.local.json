@@ -28,7 +28,8 @@
       "Bash(curl -s -o /dev/null -w \"локально: HTTP %{http_code}\\\\n\" http://127.0.0.1:8000/euler_builder.html)",
       "Bash(curl -s -o /dev/null -w \"по IP хоста: HTTP %{http_code}\\\\n\" http://192.168.0.110:8000/euler_builder.html)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(python3 -c ' *)"
     ],
     "additionalDirectories": [
       "/private/tmp"
