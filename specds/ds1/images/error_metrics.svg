@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="460" viewBox="0 0 1000 460" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="460" fill="#ffffff"/>
+
+  <defs>
+    <marker id="aBlack" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1a1a1a"/>
+    </marker>
+  </defs>
+
+  <!-- left: scatter of actual vs predicted on a control sample -->
+  <line x1="60" y1="400" x2="60" y2="55" stroke="#1a1a1a" stroke-width="2" marker-end="url(#aBlack)"/>
+  <line x1="60" y1="400" x2="410" y2="400" stroke="#1a1a1a" stroke-width="2" marker-end="url(#aBlack)"/>
+  <text x="45" y="60" font-size="18" fill="#1a1a1a">y</text>
+  <text x="418" y="405" font-size="18" fill="#1a1a1a">x</text>
+
+  <!-- pair 1 -->
+  <circle cx="140" cy="260" r="6" fill="#c0392b"/>
+  <circle cx="140" cy="295" r="6" fill="#3aa03a"/>
+
+  <!-- pair 2 with error bracket -->
+  <circle cx="210" cy="310" r="6" fill="#c0392b"/>
+  <circle cx="210" cy="352" r="6" fill="#3aa03a"/>
+  <path d="M 235 310 L 235 352" stroke="#e0a72b" stroke-width="2"/>
+  <path d="M 229 310 L 241 310" stroke="#e0a72b" stroke-width="2"/>
+  <path d="M 229 352 L 241 352" stroke="#e0a72b" stroke-width="2"/>
+  <text x="248" y="336" font-size="14" fill="#8a6414">величина</text>
+  <text x="248" y="352" font-size="14" fill="#8a6414">ошибки</text>
+
+  <!-- pair 3 -->
+  <circle cx="350" cy="275" r="6" fill="#c0392b"/>
+  <circle cx="350" cy="252" r="6" fill="#3aa03a"/>
+
+  <text x="90" y="435" font-size="16" fill="#5a2d8a" font-weight="bold">контрольная выборка</text>
+
+  <!-- legend -->
+  <circle cx="620" cy="55" r="6" fill="#c0392b"/>
+  <text x="632" y="60" font-size="14" fill="#1a1a1a">реальное значение (y)</text>
+  <circle cx="620" cy="78" r="6" fill="#3aa03a"/>
+  <text x="632" y="83" font-size="14" fill="#1a1a1a">предсказание модели (p)</text>
+
+  <!-- right: mini comparison of |x| vs x^2 near zero -->
+  <line x1="800" y1="360" x2="800" y2="95" stroke="#1a1a1a" stroke-width="2" marker-end="url(#aBlack)"/>
+  <line x1="660" y1="350" x2="940" y2="350" stroke="#1a1a1a" stroke-width="2" marker-end="url(#aBlack)"/>
+  <text x="806" y="105" font-size="16" fill="#1a1a1a">y</text>
+  <text x="945" y="356" font-size="16" fill="#1a1a1a">ошибка</text>
+
+  <path d="M680,110 L695,166 L710,215 L725,256 L740,290 L755,316 L770,335 L785,346 L800,350 L815,346 L830,335 L845,316 L860,290 L875,256 L890,215 L905,166 L920,110"
+        stroke="#2f6fb0" stroke-width="3" fill="none"/>
+  <path d="M680,230 L800,350 L920,230" stroke="#3aa03a" stroke-width="3" fill="none"/>
+
+  <text x="915" y="130" text-anchor="end" font-size="16" fill="#1d4d80" font-weight="bold">x² (MSE)</text>
+  <text x="915" y="248" text-anchor="end" font-size="16" fill="#276b27" font-weight="bold">|x| (MAE)</text>
+
+  <text x="600" y="410" font-size="12.5" fill="#333333">MSE «прощает» маленькие ошибки, но резко штрафует большие</text>
+  <text x="600" y="428" font-size="12.5" fill="#333333">(из-за квадрата); MAE штрафует все ошибки пропорционально</text>
+</svg>

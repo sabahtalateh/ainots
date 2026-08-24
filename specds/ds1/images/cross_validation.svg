@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="440" viewBox="0 0 920 440" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="920" height="440" fill="#ffffff"/>
+
+  <defs>
+    <marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a6414"/>
+    </marker>
+    <pattern id="trainHatch" width="10" height="10" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#2f6fb0" stroke-width="2"/>
+    </pattern>
+    <pattern id="testHatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="7" stroke="#c0392b" stroke-width="3"/>
+    </pattern>
+  </defs>
+
+  <!-- grid of 6 folds -->
+  <g>
+    <rect x="70" y="30" width="220" height="360" fill="none" stroke="#222222" stroke-width="2.5"/>
+    <!-- rows 1-5 train -->
+    <rect x="72" y="32" width="216" height="56" fill="url(#trainHatch)"/>
+    <rect x="72" y="90" width="216" height="56" fill="url(#trainHatch)"/>
+    <rect x="72" y="148" width="216" height="56" fill="url(#trainHatch)"/>
+    <rect x="72" y="206" width="216" height="56" fill="url(#trainHatch)"/>
+    <rect x="72" y="264" width="216" height="56" fill="url(#trainHatch)"/>
+    <!-- row 6 test -->
+    <rect x="72" y="322" width="216" height="56" fill="url(#testHatch)"/>
+
+    <line x1="70" y1="90" x2="290" y2="90" stroke="#222222" stroke-width="1.5"/>
+    <line x1="70" y1="148" x2="290" y2="148" stroke="#222222" stroke-width="1.5"/>
+    <line x1="70" y1="206" x2="290" y2="206" stroke="#222222" stroke-width="1.5"/>
+    <line x1="70" y1="264" x2="290" y2="264" stroke="#222222" stroke-width="1.5"/>
+    <line x1="70" y1="322" x2="290" y2="322" stroke="#222222" stroke-width="1.5"/>
+
+    <text x="45" y="66" text-anchor="middle" font-size="18">1</text>
+    <text x="45" y="124" text-anchor="middle" font-size="18">2</text>
+    <text x="45" y="182" text-anchor="middle" font-size="18">3</text>
+    <text x="45" y="240" text-anchor="middle" font-size="18">4</text>
+    <text x="45" y="298" text-anchor="middle" font-size="18">5</text>
+    <text x="45" y="356" text-anchor="middle" font-size="18">6</text>
+  </g>
+
+  <text x="180" y="415" text-anchor="middle" font-size="14" fill="#555555">данные, разбитые на 6 блоков</text>
+  <rect x="330" y="30" width="18" height="14" fill="url(#trainHatch)"/>
+  <text x="356" y="42" font-size="13" fill="#2f6fb0">обучение</text>
+  <rect x="330" y="52" width="18" height="14" fill="url(#testHatch)"/>
+  <text x="356" y="64" font-size="13" fill="#c0392b">проверка</text>
+
+  <!-- iteration text -->
+  <text x="330" y="120" font-size="16" fill="#2f6fb0">1–5: обучение</text>
+  <text x="330" y="144" font-size="16" fill="#c0392b">6: проверка</text>
+  <path d="M 560 130 L 640 130" stroke="#333333" stroke-width="2" fill="none" marker-end="url(#a1)"/>
+  <text x="650" y="136" font-size="18" fill="#8a6414">MAE&#8321;</text>
+
+  <text x="330" y="190" font-size="16" fill="#2f6fb0">2–6: обучение</text>
+  <text x="330" y="214" font-size="16" fill="#c0392b">1: проверка</text>
+  <path d="M 560 200 L 640 200" stroke="#333333" stroke-width="2" fill="none" marker-end="url(#a1)"/>
+  <text x="650" y="206" font-size="18" fill="#8a6414">MAE&#8322;</text>
+
+  <text x="330" y="260" font-size="20" fill="#555555">&#8942;</text>
+  <text x="650" y="260" font-size="20" fill="#8a6414">&#8942;</text>
+  <text x="330" y="300" font-size="15" fill="#555555">(всего шесть моделей)</text>
+
+  <!-- brace for spread -->
+  <path d="M 700 110 Q 730 110 730 165 Q 730 200 760 210 Q 730 220 730 255 Q 730 310 700 310"
+        stroke="#8a6414" stroke-width="2.5" fill="none"/>
+  <text x="800" y="200" text-anchor="middle" font-size="16" fill="#8a6414">разброс</text>
+  <text x="800" y="220" text-anchor="middle" font-size="16" fill="#8a6414">метрик</text>
+</svg>

@@ -29,7 +29,9 @@
       "Bash(curl -s -o /dev/null -w \"по IP хоста: HTTP %{http_code}\\\\n\" http://192.168.0.110:8000/euler_builder.html)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(Rscript -e 'print\\(12:1/12\\); print\\(gray\\(12:1/12\\)\\)')",
+      "Bash(git -C /Users/ak/Code/ainots/specmath/math2.prob+stat status)"
     ],
     "additionalDirectories": [
       "/private/tmp"

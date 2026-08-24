@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="520" viewBox="0 0 1120 520" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1120" height="520" fill="#ffffff"/>
+
+  <!-- Данные (cylinder) -->
+  <g>
+    <path d="M 20 150 L 20 250 A 75 16 0 0 0 170 250 L 170 150" fill="#f2f2f2" stroke="#333333" stroke-width="2"/>
+    <ellipse cx="95" cy="150" rx="75" ry="16" fill="#f2f2f2" stroke="#333333" stroke-width="2"/>
+    <text x="95" y="212" text-anchor="middle" font-size="19" fill="#222222">Данные</text>
+  </g>
+
+  <!-- arrow to table -->
+  <path d="M 180 205 L 260 205" stroke="#2f6fb0" stroke-width="3" marker-end="url(#arrowblue)"/>
+  <text x="220" y="178" text-anchor="middle" font-size="14" fill="#2f6fb0">&#9312; Формализация задачи</text>
+  <text x="220" y="232" text-anchor="middle" font-size="13" fill="#555555">(разметка данных)</text>
+
+  <!-- main table -->
+  <g font-size="16">
+    <rect x="280" y="130" width="90" height="40" fill="#ffffff" stroke="#222222" stroke-width="2"/>
+    <text x="325" y="156" text-anchor="middle">X&#8321;</text>
+    <rect x="370" y="130" width="90" height="40" fill="#ffffff" stroke="#222222" stroke-width="2"/>
+    <text x="415" y="156" text-anchor="middle">X&#8322;</text>
+    <rect x="460" y="130" width="60" height="40" fill="#ffffff" stroke="#222222" stroke-width="2"/>
+    <text x="490" y="156" text-anchor="middle">&#8230;</text>
+    <rect x="520" y="130" width="90" height="40" fill="#ffffff" stroke="#c0392b" stroke-width="2"/>
+    <text x="565" y="156" text-anchor="middle" fill="#c0392b">Y</text>
+
+    <g stroke="#222222" stroke-width="1.5" fill="none">
+      <rect x="280" y="170" width="90" height="34"/>
+      <rect x="370" y="170" width="90" height="34"/>
+      <rect x="460" y="170" width="60" height="34"/>
+      <rect x="520" y="170" width="90" height="34" stroke="#c0392b"/>
+
+      <rect x="280" y="204" width="90" height="34" stroke="#7a3fb3" stroke-width="2.5"/>
+      <rect x="370" y="204" width="90" height="34" stroke="#7a3fb3" stroke-width="2.5"/>
+      <rect x="460" y="204" width="60" height="34" stroke="#7a3fb3" stroke-width="2.5"/>
+      <rect x="520" y="204" width="90" height="34" stroke="#7a3fb3" stroke-width="2.5"/>
+
+      <rect x="280" y="238" width="90" height="34"/>
+      <rect x="370" y="238" width="90" height="34"/>
+      <rect x="460" y="238" width="60" height="34"/>
+      <rect x="520" y="238" width="90" height="34" stroke="#c0392b"/>
+
+      <rect x="280" y="272" width="90" height="34"/>
+      <rect x="370" y="272" width="90" height="34"/>
+      <rect x="460" y="272" width="60" height="34"/>
+      <rect x="520" y="272" width="90" height="34" stroke="#c0392b"/>
+    </g>
+  </g>
+
+  <rect x="272" y="122" width="256" height="192" fill="none" stroke="#3aa03a" stroke-width="2.5" rx="4"/>
+  <text x="400" y="108" text-anchor="middle" font-size="15" fill="#3aa03a">входные данные</text>
+
+  <rect x="512" y="122" width="106" height="192" fill="none" stroke="#c0392b" stroke-width="2.5" rx="4"/>
+
+  <!-- Предсказать -->
+  <path d="M 678 150 L 622 156" stroke="#c0392b" stroke-width="2" marker-end="url(#arrowred)"/>
+  <text x="686" y="155" font-size="16" fill="#c0392b">Предсказать</text>
+
+  <!-- Событие (факт) -->
+  <path d="M 678 221 L 622 221" stroke="#7a3fb3" stroke-width="2" marker-end="url(#arrowpurple)"/>
+  <text x="686" y="215" font-size="15" fill="#7a3fb3">Событие</text>
+  <text x="686" y="234" font-size="15" fill="#7a3fb3">(факт)</text>
+
+  <!-- formula annotation -->
+  <text x="400" y="340" text-anchor="middle" font-size="16" fill="#222222">Y = f(X&#8321;, X&#8322;, &#8230;)</text>
+  <text x="400" y="362" text-anchor="middle" font-size="14" fill="#555555">f — неизвестная функция, которую нужно найти</text>
+
+  <!-- brace under X columns -->
+  <path d="M 285 388 Q 400 415 515 388" stroke="#555555" stroke-width="1.5" fill="none"/>
+  <text x="400" y="438" text-anchor="middle" font-size="15" fill="#555555">свойства (контекст) события</text>
+
+  <!-- future events mini table -->
+  <text x="400" y="470" text-anchor="middle" font-size="15" fill="#555555">будущие события</text>
+  <g font-size="14">
+    <rect x="280" y="478" width="90" height="40" fill="#eaf5ea" stroke="#3aa03a" stroke-width="2"/>
+    <text x="325" y="503" text-anchor="middle" fill="#3aa03a">известно</text>
+    <rect x="370" y="478" width="90" height="40" fill="#eaf5ea" stroke="#3aa03a" stroke-width="2"/>
+    <text x="415" y="503" text-anchor="middle" fill="#3aa03a">известно</text>
+    <rect x="460" y="478" width="60" height="40" fill="#ffffff" stroke="#7a3fb3" stroke-width="2"/>
+    <text x="490" y="503" text-anchor="middle" fill="#7a3fb3" font-style="italic">f</text>
+    <rect x="520" y="478" width="90" height="40" fill="#fdecea" stroke="#c0392b" stroke-width="2"/>
+    <text x="565" y="504" text-anchor="middle" fill="#c0392b" font-size="18">?</text>
+  </g>
+
+  <defs>
+    <marker id="arrowblue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2f6fb0"/>
+    </marker>
+    <marker id="arrowred" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#c0392b"/>
+    </marker>
+    <marker id="arrowpurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#7a3fb3"/>
+    </marker>
+  </defs>
+</svg>

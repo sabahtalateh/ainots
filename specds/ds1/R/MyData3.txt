@@ -1,0 +1,4 @@
+FirstName;LastName;Education;Age;Salary
+Evgeny;Onegin;High;26;100
+Vladimir;Lensky;Medium;18;200
+Tatyana;Larina;Low;16;300
