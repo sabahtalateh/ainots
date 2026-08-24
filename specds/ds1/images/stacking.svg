@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="440" viewBox="0 0 1000 440" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#ffffff"/>
+
+  <defs>
+    <marker id="aGray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#777777"/>
+    </marker>
+    <marker id="aRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#c0392b"/>
+    </marker>
+    <marker id="aGold" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a6414"/>
+    </marker>
+  </defs>
+
+  <!-- sample box -->
+  <rect x="30" y="170" width="130" height="70" fill="#e8f0fa" stroke="#2f6fb0" stroke-width="2.5" rx="6"/>
+  <text x="95" y="212" text-anchor="middle" font-size="18" fill="#2f6fb0">выборка</text>
+  <text x="95" y="260" text-anchor="middle" font-size="13" fill="#555555">одна и та же</text>
+  <text x="95" y="276" text-anchor="middle" font-size="13" fill="#555555">для всех</text>
+
+  <!-- 4 different algorithms (different shapes = different algorithms) -->
+  <g>
+    <path d="M 162 90 L 260 90" stroke="#777777" stroke-width="2" fill="none" marker-end="url(#aGray)"/>
+    <rect x="270" y="66" width="120" height="48" fill="#fff8e6" stroke="#e0a72b" stroke-width="2" rx="4"/>
+    <text x="330" y="95" text-anchor="middle" font-size="14" fill="#8a6414">алгоритм 1</text>
+
+    <path d="M 162 150 L 260 150" stroke="#777777" stroke-width="2" fill="none" marker-end="url(#aGray)"/>
+    <rect x="270" y="126" width="120" height="48" fill="#eaf5ea" stroke="#3aa03a" stroke-width="2" rx="4"/>
+    <text x="330" y="155" text-anchor="middle" font-size="14" fill="#3aa03a">алгоритм 2</text>
+
+    <path d="M 162 230 L 260 230" stroke="#777777" stroke-width="2" fill="none" marker-end="url(#aGray)"/>
+    <rect x="270" y="206" width="120" height="48" fill="#f5eafd" stroke="#7a3fb3" stroke-width="2" rx="4"/>
+    <text x="330" y="235" text-anchor="middle" font-size="14" fill="#7a3fb3">алгоритм 3</text>
+
+    <path d="M 162 290 L 260 290" stroke="#777777" stroke-width="2" fill="none" marker-end="url(#aGray)"/>
+    <rect x="270" y="266" width="120" height="48" fill="#fdecea" stroke="#c0392b" stroke-width="2" rx="4"/>
+    <text x="330" y="295" text-anchor="middle" font-size="14" fill="#c0392b">алгоритм 4</text>
+  </g>
+  <text x="330" y="335" text-anchor="middle" font-size="13" fill="#555555">разные алгоритмы</text>
+
+  <!-- predictions -->
+  <g font-size="18">
+    <path d="M 392 90 L 470 90" stroke="#c0392b" stroke-width="2" fill="none" marker-end="url(#aRed)"/>
+    <text x="480" y="96" fill="#c0392b">y&#8321;</text>
+
+    <path d="M 392 150 L 470 150" stroke="#c0392b" stroke-width="2" fill="none" marker-end="url(#aRed)"/>
+    <text x="480" y="156" fill="#c0392b">y&#8322;</text>
+
+    <path d="M 392 230 L 470 230" stroke="#c0392b" stroke-width="2" fill="none" marker-end="url(#aRed)"/>
+    <text x="480" y="236" fill="#c0392b">y&#8323;</text>
+
+    <path d="M 392 290 L 470 290" stroke="#c0392b" stroke-width="2" fill="none" marker-end="url(#aRed)"/>
+    <text x="480" y="296" fill="#c0392b">y&#8324;</text>
+  </g>
+
+  <!-- brace -->
+  <path d="M 520 75 Q 550 75 550 130 Q 550 165 575 190 Q 550 215 550 250 Q 550 305 520 305"
+        stroke="#8a6414" stroke-width="2.5" fill="none"/>
+
+  <!-- meta algorithm -->
+  <rect x="600" y="160" width="200" height="60" fill="#fff8e6" stroke="#8a6414" stroke-width="2.5" rx="6"/>
+  <text x="700" y="185" text-anchor="middle" font-size="15" fill="#8a6414">итоговый</text>
+  <text x="700" y="205" text-anchor="middle" font-size="15" fill="#8a6414">(решающий) алгоритм</text>
+  <path d="M 580 190 L 596 190" stroke="#8a6414" stroke-width="2.5" fill="none" marker-end="url(#aGold)"/>
+
+  <path d="M 802 190 L 870 190" stroke="#8a6414" stroke-width="2.5" fill="none" marker-end="url(#aGold)"/>
+  <text x="885" y="198" font-size="20" fill="#8a6414">y</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="560" viewBox="0 0 980 560" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+<rect width="980" height="560" fill="#ffffff"/>
+<defs><marker id="ax" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker></defs>
+<line x1="110" y1="75" x2="110" y2="430" stroke="#111" stroke-width="1.8"/>
+<line x1="110" y1="430" x2="880" y2="430" stroke="#111" stroke-width="1.8" marker-end="url(#ax)"/>
+<text x="96" y="72" font-size="18" font-style="italic" text-anchor="end">μ</text>
+<text x="890" y="450" font-size="17" text-anchor="middle">мощность, %</text>
+<line x1="110" y1="90.0" x2="860" y2="90.0" stroke="#ddd" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="96" y="95.0" font-size="14" text-anchor="end" fill="#555">1</text>
+<line x1="110" y1="302.5" x2="860" y2="302.5" stroke="#ddd" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="96" y="307.5" font-size="14" text-anchor="end" fill="#555">0,375</text>
+<line x1="110" y1="345.0" x2="860" y2="345.0" stroke="#ddd" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="96" y="350.0" font-size="14" text-anchor="end" fill="#555">0,25</text>
+<text x="96" y="435.0" font-size="14" text-anchor="end" fill="#555">0</text>
+<line x1="110.0" y1="430" x2="110.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="110.0" y="454" font-size="14" text-anchor="middle" fill="#333">0</text>
+<line x1="260.0" y1="430" x2="260.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="260.0" y="454" font-size="14" text-anchor="middle" fill="#333">20</text>
+<line x1="410.0" y1="430" x2="410.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="410.0" y="454" font-size="14" text-anchor="middle" fill="#333">40</text>
+<line x1="485.0" y1="430" x2="485.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="485.0" y="454" font-size="14" text-anchor="middle" fill="#333">50</text>
+<line x1="560.0" y1="430" x2="560.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="560.0" y="454" font-size="14" text-anchor="middle" fill="#333">60</text>
+<line x1="710.0" y1="430" x2="710.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="710.0" y="454" font-size="14" text-anchor="middle" fill="#333">80</text>
+<line x1="860.0" y1="430" x2="860.0" y2="436" stroke="#111" stroke-width="1"/>
+<text x="860.0" y="454" font-size="14" text-anchor="middle" fill="#333">100</text>
+<polyline points="110.0,430.0 260.0,90.0 410.0,430.0" fill="none" stroke="#888" stroke-width="1.6" stroke-dasharray="5 4"/>
+<polyline points="260.0,430.0 485.0,90.0 710.0,430.0" fill="none" stroke="#888" stroke-width="1.6" stroke-dasharray="5 4"/>
+<polyline points="560.0,430.0 710.0,90.0 860.0,430.0" fill="none" stroke="#888" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="260.0" y="80.0" font-size="13" fill="#888" text-anchor="middle">слабая</text>
+<text x="485.0" y="80.0" font-size="13" fill="#888" text-anchor="middle">средняя</text>
+<text x="710.0" y="80.0" font-size="13" fill="#888" text-anchor="middle">сильная (не активна, μ=0)</text>
+<polygon points="110.0,430.0 147.5,345.0 316.2,345.0 344.4,302.5 625.6,302.5 710.0,430.0 860.0,430.0" fill="#2f6fb0" fill-opacity="0.18" stroke="none"/>
+<polyline points="110.0,430.0 147.5,345.0 316.2,345.0 344.4,302.5 625.6,302.5 710.0,430.0 860.0,430.0" fill="none" stroke="#2f6fb0" stroke-width="4"/>
+<line x1="395.0" y1="277.0" x2="395.0" y2="430" stroke="#c0392b" stroke-width="2.2" stroke-dasharray="6 4"/>
+<circle cx="395.0" cy="430" r="5" fill="#c0392b"/>
+<text x="395.0" y="267.0" font-size="15" fill="#c0392b" text-anchor="middle">Y ≈ 38%</text>
+<line x1="120" y1="490" x2="154" y2="490" stroke="#888" stroke-width="3" stroke-dasharray="5 4"/>
+<text x="162" y="494" font-size="14" fill="#222">исходные (полные) термы слабая/средняя/сильная</text>
+<line x1="120" y1="516" x2="154" y2="516" stroke="#2f6fb0" stroke-width="3" />
+<text x="162" y="520" font-size="14" fill="#222">накопленный результат = объединение усечённых слабая (0,25) и средняя (0,375)</text>
+<line x1="120" y1="542" x2="154" y2="542" stroke="#c0392b" stroke-width="3" stroke-dasharray="6 4"/>
+<text x="162" y="546" font-size="14" fill="#222">дефаззификация: итоговое число Y ≈ 38%</text>
+</svg>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="560" viewBox="0 0 1080 560" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="1080" height="560" fill="#ffffff"/>
+
+  <defs>
+    <marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#333333"/>
+    </marker>
+    <marker id="aGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#3aa03a"/>
+    </marker>
+    <marker id="aBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#2f6fb0"/>
+    </marker>
+    <marker id="aRed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#c0392b"/>
+    </marker>
+    <marker id="aGold" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a6414"/>
+    </marker>
+    <marker id="aPurple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#7a3fb3"/>
+    </marker>
+  </defs>
+
+  <!-- Критерии оценки качества -->
+  <rect x="20" y="20" width="230" height="44" fill="#fdecea" stroke="#c0392b" stroke-width="2" rx="6"/>
+  <text x="135" y="47" text-anchor="middle" font-size="15" fill="#c0392b">Критерии оценки качества</text>
+
+  <!-- data table (X, Y | mtcars) -->
+  <rect x="70" y="140" width="140" height="70" fill="#ffffff" stroke="#222222" stroke-width="2"/>
+  <line x1="140" y1="140" x2="140" y2="210" stroke="#222222" stroke-width="1.5"/>
+  <line x1="70" y1="175" x2="210" y2="175" stroke="#222222" stroke-width="1.5"/>
+  <text x="105" y="163" text-anchor="middle" font-size="15">X</text>
+  <text x="175" y="163" text-anchor="middle" font-size="15">Y</text>
+  <text x="140" y="235" text-anchor="middle" font-size="14" fill="#555555">mtcars</text>
+  <text x="140" y="122" text-anchor="middle" font-size="13" fill="#555555" font-style="italic">разметка данных (f)</text>
+
+  <!-- split boxes -->
+  <rect x="330" y="120" width="90" height="40" fill="#eaf5ea" stroke="#3aa03a" stroke-width="2.5" rx="5"/>
+  <text x="375" y="145" text-anchor="middle" font-size="16" fill="#3aa03a">70%</text>
+  <text x="375" y="102" text-anchor="middle" font-size="13" fill="#3aa03a">обучающая выборка</text>
+
+  <rect x="330" y="230" width="90" height="40" fill="#e8f0fa" stroke="#2f6fb0" stroke-width="2.5" rx="5"/>
+  <text x="375" y="255" text-anchor="middle" font-size="16" fill="#2f6fb0">30%</text>
+  <text x="375" y="290" text-anchor="middle" font-size="13" fill="#2f6fb0">контрольная выборка</text>
+
+  <path d="M 212 165 L 320 135" stroke="#333333" stroke-width="2" fill="none" marker-end="url(#a1)"/>
+  <path d="M 212 185 L 320 245" stroke="#333333" stroke-width="2" fill="none" marker-end="url(#a1)"/>
+
+  <!-- Алгоритм -->
+  <rect x="800" y="20" width="180" height="44" fill="#e8f0fa" stroke="#2f6fb0" stroke-width="2" rx="6"/>
+  <text x="890" y="47" text-anchor="middle" font-size="15" fill="#2f6fb0">Алгоритм</text>
+  <path d="M 890 66 L 890 100" stroke="#2f6fb0" stroke-width="2.5" fill="none" marker-end="url(#aBlue)"/>
+
+  <!-- Обучение -->
+  <rect x="800" y="120" width="180" height="50" fill="#fff8e6" stroke="#e0a72b" stroke-width="2.5" rx="6"/>
+  <text x="890" y="150" text-anchor="middle" font-size="16" fill="#8a6414">Обучение</text>
+  <path d="M 422 138 L 796 145" stroke="#3aa03a" stroke-width="2.5" fill="none" marker-end="url(#aGreen)"/>
+
+  <!-- Обученная модель -->
+  <ellipse cx="890" cy="270" rx="105" ry="48" fill="#fff8e6" stroke="#e0a72b" stroke-width="2.5"/>
+  <text x="890" y="264" text-anchor="middle" font-size="15" fill="#8a6414">Обученная</text>
+  <text x="890" y="284" text-anchor="middle" font-size="15" fill="#8a6414">модель</text>
+  <path d="M 890 172 L 890 218" stroke="#e0a72b" stroke-width="2.5" fill="none" marker-end="url(#aGold)"/>
+
+  <!-- Оценка модели -->
+  <rect x="470" y="420" width="200" height="60" fill="#fdecea" stroke="#c0392b" stroke-width="2.5" rx="6"/>
+  <text x="570" y="446" text-anchor="middle" font-size="16" fill="#c0392b">Оценка</text>
+  <text x="570" y="466" text-anchor="middle" font-size="16" fill="#c0392b">модели</text>
+
+  <path d="M 787 285 L 674 440" stroke="#e0a72b" stroke-width="2.5" fill="none" marker-end="url(#aGold)"/>
+  <path d="M 375 271 L 500 421" stroke="#2f6fb0" stroke-width="2.5" fill="none" marker-end="url(#aBlue)"/>
+  <path d="M 135 65 L 400 415" stroke="#c0392b" stroke-width="1.8" fill="none" stroke-dasharray="6,4" marker-end="url(#aRed)"/>
+
+  <!-- Эксплуатация -->
+  <rect x="470" y="510" width="200" height="44" fill="#eaf5ea" stroke="#3aa03a" stroke-width="2" rx="6"/>
+  <text x="570" y="537" text-anchor="middle" font-size="15" fill="#3aa03a">Эксплуатация</text>
+  <path d="M 570 480 L 570 506" stroke="#333333" stroke-width="2" fill="none" marker-end="url(#a1)"/>
+
+  <!-- Ещё раз loop -->
+  <path d="M 470 450 L 240 450 L 240 170" stroke="#7a3fb3" stroke-width="2" fill="none" marker-end="url(#aPurple)"/>
+  <text x="355" y="440" text-anchor="middle" font-size="14" fill="#7a3fb3">ещё раз, если не удовлетворяет критериям</text>
+</svg>

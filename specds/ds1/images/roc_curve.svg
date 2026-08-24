@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="540" viewBox="0 0 820 540" font-family="Helvetica, Arial, sans-serif">
+  <rect x="0" y="0" width="820" height="540" fill="#ffffff"/>
+
+  <defs>
+    <marker id="rocArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1a1a1a"/>
+    </marker>
+  </defs>
+
+  <!-- axes -->
+  <line x1="100" y1="445" x2="100" y2="55" stroke="#1a1a1a" stroke-width="2" marker-end="url(#rocArrow)"/>
+  <line x1="95" y1="440" x2="505" y2="440" stroke="#1a1a1a" stroke-width="2" marker-end="url(#rocArrow)"/>
+
+  <!-- axis ticks -->
+  <line x1="460" y1="436" x2="460" y2="444" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="460" y="462" text-anchor="middle" font-size="14" fill="#1a1a1a">1</text>
+  <text x="100" y="462" text-anchor="middle" font-size="14" fill="#1a1a1a">0</text>
+  <line x1="96" y1="80" x2="104" y2="80" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="86" y="85" text-anchor="end" font-size="14" fill="#1a1a1a">1</text>
+  <text x="86" y="444" text-anchor="end" font-size="14" fill="#1a1a1a">0</text>
+
+  <!-- axis titles -->
+  <text x="300" y="500" text-anchor="middle" font-size="16" fill="#1a1a1a">FPR (ложноположительные) = ЛП / (ЛП + ИО)</text>
+  <text x="40" y="260" text-anchor="middle" font-size="16" fill="#1a1a1a" transform="rotate(-90 40 260)">TPR / Recall (истинноположительные) = ИП / (ИП + ЛО)</text>
+
+  <!-- diagonal baseline: random guessing -->
+  <line x1="100" y1="440" x2="460" y2="80" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="7,5"/>
+
+  <!-- shaded AUC area -->
+  <path d="M100,440 C110,150 300,90 460,80 L460,440 Z" fill="#2f6fb0" opacity="0.15"/>
+
+  <!-- ROC curve -->
+  <path d="M100,440 C110,150 300,90 460,80" stroke="#2f6fb0" stroke-width="3.5" fill="none"/>
+
+  <!-- threshold marker points along the curve -->
+  <circle cx="126" cy="292" r="6" fill="#ffffff" stroke="#2f6fb0" stroke-width="2.5"/>
+  <circle cx="224" cy="155" r="6" fill="#ffffff" stroke="#2f6fb0" stroke-width="2.5"/>
+  <circle cx="362" cy="93" r="6" fill="#ffffff" stroke="#2f6fb0" stroke-width="2.5"/>
+
+  <!-- threshold direction labels -->
+  <text x="118" y="470" font-size="13.5" fill="#5a2d8a" font-weight="bold">thresh = 1</text>
+  <text x="118" y="486" font-size="12.5" fill="#5a2d8a">(никого не отмечаем «1»)</text>
+  <text x="460" y="66" text-anchor="end" font-size="13.5" fill="#5a2d8a" font-weight="bold">thresh = 0</text>
+  <text x="460" y="50" text-anchor="end" font-size="12.5" fill="#5a2d8a">(отмечаем «1» всех)</text>
+
+  <path d="M 170 330 Q 260 260 400 130" stroke="#5a2d8a" stroke-width="1.5" fill="none" stroke-dasharray="3,4" marker-end="url(#purpleArrow)"/>
+  <defs>
+    <marker id="purpleArrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L8,3 z" fill="#5a2d8a"/>
+    </marker>
+  </defs>
+  <text x="300" y="248" font-size="13" fill="#5a2d8a" transform="rotate(-32 300 248)">снижаем порог →</text>
+
+  <!-- diagonal label -->
+  <text x="330" y="255" font-size="14" fill="#666666">случайное угадывание</text>
+  <text x="330" y="272" font-size="14" fill="#666666">(AUC = 0.5)</text>
+
+  <!-- legend -->
+  <line x1="560" y1="118" x2="600" y2="118" stroke="#2f6fb0" stroke-width="3.5"/>
+  <text x="610" y="123" font-size="14.5" fill="#1a1a1a">ROC-кривая модели</text>
+
+  <line x1="560" y1="150" x2="600" y2="150" stroke="#8a8a8a" stroke-width="2" stroke-dasharray="7,5"/>
+  <text x="610" y="155" font-size="14.5" fill="#1a1a1a">случайное угадывание</text>
+
+  <rect x="560" y="176" width="40" height="16" fill="#2f6fb0" opacity="0.3"/>
+  <text x="610" y="189" font-size="14.5" fill="#1a1a1a">AUC ≈ 0.80</text>
+  <text x="610" y="207" font-size="12.5" fill="#555555">(площадь под кривой)</text>
+
+  <text x="560" y="240" font-size="12.5" fill="#333333">чем ближе кривая к</text>
+  <text x="560" y="257" font-size="12.5" fill="#333333">левому верхнему углу,</text>
+  <text x="560" y="274" font-size="12.5" fill="#333333">тем лучше классификатор</text>
+</svg>
